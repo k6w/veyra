@@ -1,0 +1,38 @@
+# Arithmetic Operations Test
+
+# Basic arithmetic
+let a = 10
+let b = 5
+
+print(a + b)  # 15
+print(a - b)  # 5
+print(a * b)  # 50
+print(a / b)  # 2
+
+# Mixed integer and float operations
+let x = 10
+let y = 3.5
+
+print(x + y)  # 13.5
+print(x * y)  # 35.0
+
+# String concatenation
+let first = "Hello, "
+let second = "World!"
+print(first + second)  # Hello, World!
+
+# More complex expressions
+let result = (a + b) * 2
+print(result)  # 30
+
+# Using variables in expressions
+let sum = a + b
+let product = a * b
+let combined = sum + product
+print(combined)  # 65
+
+# Boolean operations (if implemented)
+let true_val = true
+let false_val = false
+print(true_val)
+print(false_val)

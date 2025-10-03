@@ -1,0 +1,22 @@
+[workspace]
+members = [
+    "repl",
+    "formatter",
+    "linter",
+    "package_manager",
+    "lsp",
+    "debugger"
+]
+resolver = "2"
+
+[workspace.dependencies]
+# Shared dependencies
+clap = { version = "4.0", features = ["derive"] }
+anyhow = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+colored = "2.0"
+
+# Reference to the main compiler
+veyra-compiler = { path = "../compiler" }

@@ -1,0 +1,544 @@
+# Veyra Standard Library - DateTime Module
+# Date and time operations and utilities
+
+# ===== TIME CONSTANTS =====
+
+let SECONDS_PER_MINUTE = 60
+let SECONDS_PER_HOUR = 3600
+let SECONDS_PER_DAY = 86400
+let DAYS_PER_WEEK = 7
+let MONTHS_PER_YEAR = 12
+
+# Days in each month (non-leap year)
+let DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+# Month names
+let MONTH_NAMES = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+]
+
+# Day names
+let DAY_NAMES = [
+    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+]
+
+# ===== CURRENT TIME =====
+
+# Get current timestamp (Unix epoch in seconds)
+fn now() {
+    # Get system time - this interfaces with the runtime
+    # In a real implementation, this would call system APIs
+    let seconds = system_time_seconds()
+    return seconds
+}
+
+# Get current time as struct
+fn current_time() {
+    let timestamp = now()
+    return timestamp_to_struct(timestamp)
+}
+
+# ===== TIMESTAMP CONVERSION =====
+
+# Convert timestamp to date/time struct
+fn timestamp_to_struct(timestamp) {
+    # Full Gregorian calendar conversion with leap year support
+    let seconds_per_minute = 60
+    let seconds_per_hour = 3600
+    let seconds_per_day = 86400
+    
+    # Days since Unix epoch (1970-01-01)
+    let days_since_epoch = timestamp / seconds_per_day
+    let remaining_seconds = timestamp % seconds_per_day
+    
+    # Calculate hours, minutes, seconds
+    let hours = remaining_seconds / seconds_per_hour
+    let remaining_seconds_after_hours = remaining_seconds % seconds_per_hour
+    let minutes = remaining_seconds_after_hours / seconds_per_minute
+    let seconds = remaining_seconds_after_hours % seconds_per_minute
+    
+    # Calculate year, month, day (Gregorian calendar)
+    let year = 1970
+    let current_days = days_since_epoch
+    
+    # Advance years
+    while current_days >= days_in_year(year) {
+        current_days = current_days - days_in_year(year)
+        year = year + 1
+    }
+    
+    # Find month and day
+    let month = 1
+    while current_days >= days_in_month(month, year) {
+        current_days = current_days - days_in_month(month, year)
+        month = month + 1
+    }
+    
+    let day = current_days + 1  # Days are 1-indexed
+    
+    return {
+        "year": year,
+        "month": month,
+        "day": day,
+        "hour": hours,
+        "minute": minutes,
+        "second": seconds
+    }
+    let days_since_epoch = timestamp / SECONDS_PER_DAY
+    let seconds_in_day = timestamp % SECONDS_PER_DAY
+
+    let year = 1970
+    let days_remaining = days_since_epoch
+
+    # Calculate year
+    while true {
+        let days_in_year = if is_leap_year(year) { 366 } else { 365 }
+        if days_remaining < days_in_year {
+            break
+        }
+        days_remaining = days_remaining - days_in_year
+        year = year + 1
+    }
+
+    # Calculate month and day
+    let month = 1
+    while month <= 12 {
+        let days_in_month = get_days_in_month(month, year)
+        if days_remaining < days_in_month {
+            break
+        }
+        days_remaining = days_remaining - days_in_month
+        month = month + 1
+    }
+
+    let day = days_remaining + 1
+    let hour = seconds_in_day / SECONDS_PER_HOUR
+    let minute = (seconds_in_day % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE
+    let second = seconds_in_day % SECONDS_PER_MINUTE
+
+    return {
+        "year": year,
+        "month": month,
+        "day": day,
+        "hour": hour,
+        "minute": minute,
+        "second": second,
+        "timestamp": timestamp
+    }
+}
+
+# Convert date/time struct to timestamp
+fn struct_to_timestamp(dt) {
+    let timestamp = 0
+
+    # Add years
+    let year = 1970
+    while year < dt["year"] {
+        timestamp = timestamp + (if is_leap_year(year) { 366 } else { 365 }) * SECONDS_PER_DAY
+        year = year + 1
+    }
+
+    # Add months
+    let month = 1
+    while month < dt["month"] {
+        timestamp = timestamp + get_days_in_month(month, dt["year"]) * SECONDS_PER_DAY
+        month = month + 1
+    }
+
+    # Add days
+    timestamp = timestamp + (dt["day"] - 1) * SECONDS_PER_DAY
+
+    # Add time
+    timestamp = timestamp + dt["hour"] * SECONDS_PER_HOUR
+    timestamp = timestamp + dt["minute"] * SECONDS_PER_MINUTE
+    timestamp = timestamp + dt["second"]
+
+    return timestamp
+}
+
+# ===== DATE/TIME PARSING =====
+
+# Parse date string (YYYY-MM-DD)
+fn parse_date(date_str) {
+    let parts = string_split(date_str, "-")
+    if array_length(parts) != 3 {
+        return None
+    }
+
+    let year = string_to_int(parts[0])
+    let month = string_to_int(parts[1])
+    let day = string_to_int(parts[2])
+
+    if not is_valid_date(year, month, day) {
+        return None
+    }
+
+    return {"year": year, "month": month, "day": day}
+}
+
+# Parse time string (HH:MM:SS)
+fn parse_time(time_str) {
+    let parts = string_split(time_str, ":")
+    if array_length(parts) != 3 {
+        return None
+    }
+
+    let hour = string_to_int(parts[0])
+    let minute = string_to_int(parts[1])
+    let second = string_to_int(parts[2])
+
+    if not is_valid_time(hour, minute, second) {
+        return None
+    }
+
+    return {"hour": hour, "minute": minute, "second": second}
+}
+
+# Parse datetime string (YYYY-MM-DD HH:MM:SS)
+fn parse_datetime(datetime_str) {
+    let parts = string_split(datetime_str, " ")
+    if array_length(parts) != 2 {
+        return None
+    }
+
+    let date_part = parse_date(parts[0])
+    let time_part = parse_time(parts[1])
+
+    if date_part == None or time_part == None {
+        return None
+    }
+
+    return date_part + time_part
+}
+
+# ===== DATE/TIME FORMATTING =====
+
+# Format date as YYYY-MM-DD
+fn format_date(dt) {
+    let year_str = string_pad_left(to_string(dt["year"]), 4, "0")
+    let month_str = string_pad_left(to_string(dt["month"]), 2, "0")
+    let day_str = string_pad_left(to_string(dt["day"]), 2, "0")
+    return year_str + "-" + month_str + "-" + day_str
+}
+
+# Format time as HH:MM:SS
+fn format_time(dt) {
+    let hour_str = string_pad_left(to_string(dt["hour"]), 2, "0")
+    let minute_str = string_pad_left(to_string(dt["minute"]), 2, "0")
+    let second_str = string_pad_left(to_string(dt["second"]), 2, "0")
+    return hour_str + ":" + minute_str + ":" + second_str
+}
+
+# Format datetime as YYYY-MM-DD HH:MM:SS
+fn format_datetime(dt) {
+    return format_date(dt) + " " + format_time(dt)
+}
+
+# Format with custom pattern
+fn format_datetime_pattern(dt, pattern) {
+    # Simple pattern replacement
+    let result = string_replace_all(pattern, "%Y", to_string(dt["year"]))
+    let result = string_replace_all(result, "%m", string_pad_left(to_string(dt["month"]), 2, "0"))
+    let result = string_replace_all(result, "%d", string_pad_left(to_string(dt["day"]), 2, "0"))
+    let result = string_replace_all(result, "%H", string_pad_left(to_string(dt["hour"]), 2, "0"))
+    let result = string_replace_all(result, "%M", string_pad_left(to_string(dt["minute"]), 2, "0"))
+    let result = string_replace_all(result, "%S", string_pad_left(to_string(dt["second"]), 2, "0"))
+    return result
+}
+
+# ===== DATE/TIME ARITHMETIC =====
+
+# Add seconds to timestamp
+fn add_seconds(timestamp, seconds) {
+    return timestamp + seconds
+}
+
+# Add minutes to timestamp
+fn add_minutes(timestamp, minutes) {
+    return timestamp + minutes * SECONDS_PER_MINUTE
+}
+
+# Add hours to timestamp
+fn add_hours(timestamp, hours) {
+    return timestamp + hours * SECONDS_PER_HOUR
+}
+
+# Add days to timestamp
+fn add_days(timestamp, days) {
+    return timestamp + days * SECONDS_PER_DAY
+}
+
+# Add weeks to timestamp
+fn add_weeks(timestamp, weeks) {
+    return timestamp + weeks * DAYS_PER_WEEK * SECONDS_PER_DAY
+}
+
+# Add months to timestamp (approximate)
+fn add_months(timestamp, months) {
+    let dt = timestamp_to_struct(timestamp)
+    let new_month = dt["month"] + months
+    let new_year = dt["year"] + (new_month - 1) / 12
+    let actual_month = ((new_month - 1) % 12) + 1
+
+    dt["year"] = new_year
+    dt["month"] = actual_month
+
+    # Adjust day if necessary
+    let max_days = get_days_in_month(actual_month, new_year)
+    if dt["day"] > max_days {
+        dt["day"] = max_days
+    }
+
+    return struct_to_timestamp(dt)
+}
+
+# Add years to timestamp (approximate)
+fn add_years(timestamp, years) {
+    return add_months(timestamp, years * 12)
+}
+
+# ===== DATE/TIME COMPARISON =====
+
+# Compare two timestamps
+fn compare_timestamps(t1, t2) {
+    if t1 < t2 {
+        return -1
+    } else if t1 > t2 {
+        return 1
+    } else {
+        return 0
+    }
+}
+
+# Check if timestamp is before another
+fn is_before(t1, t2) {
+    return t1 < t2
+}
+
+# Check if timestamp is after another
+fn is_after(t1, t2) {
+    return t1 > t2
+}
+
+# Check if timestamps are equal
+fn timestamps_equal(t1, t2) {
+    return t1 == t2
+}
+
+# ===== DATE/TIME UTILITIES =====
+
+# Get day of week (0 = Sunday, 6 = Saturday)
+fn day_of_week(timestamp) {
+    # Days since Unix epoch (1970-01-01 was a Thursday)
+    let days_since_epoch = timestamp / SECONDS_PER_DAY
+    return (days_since_epoch + 4) % 7  # 4 because 1970-01-01 was Thursday
+}
+
+# Get day name
+fn day_name(day_of_week_num) {
+    return DAY_NAMES[day_of_week_num]
+}
+
+# Get month name
+fn month_name(month_num) {
+    return MONTH_NAMES[month_num - 1]
+}
+
+# Get week of year
+fn week_of_year(timestamp) {
+    let dt = timestamp_to_struct(timestamp)
+    let first_day_of_year = struct_to_timestamp({"year": dt["year"], "month": 1, "day": 1, "hour": 0, "minute": 0, "second": 0})
+    let days_since_year_start = (timestamp - first_day_of_year) / SECONDS_PER_DAY
+    let first_weekday = day_of_week(first_day_of_year)
+
+    return (days_since_year_start + first_weekday) / 7 + 1
+}
+
+# Get day of year
+fn day_of_year(timestamp) {
+    let dt = timestamp_to_struct(timestamp)
+    let year_start = struct_to_timestamp({"year": dt["year"], "month": 1, "day": 1, "hour": 0, "minute": 0, "second": 0})
+    return (timestamp - year_start) / SECONDS_PER_DAY + 1
+}
+
+# ===== LEAP YEAR FUNCTIONS =====
+
+# Check if year is leap year
+fn is_leap_year(year) {
+    return (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)
+}
+
+# Get days in month
+fn get_days_in_month(month, year) {
+    if month == 2 and is_leap_year(year) {
+        return 29
+    } else {
+        return DAYS_IN_MONTH[month - 1]
+    }
+}
+
+# ===== VALIDATION =====
+
+# Check if date is valid
+fn is_valid_date(year, month, day) {
+    if year < 1 or month < 1 or month > 12 or day < 1 {
+        return false
+    }
+
+    let days_in_month = get_days_in_month(month, year)
+    return day <= days_in_month
+}
+
+# Check if time is valid
+fn is_valid_time(hour, minute, second) {
+    return hour >= 0 and hour <= 23 and
+           minute >= 0 and minute <= 59 and
+           second >= 0 and second <= 59
+}
+
+# Check if datetime is valid
+fn is_valid_datetime(year, month, day, hour, minute, second) {
+    return is_valid_date(year, month, day) and is_valid_time(hour, minute, second)
+}
+
+# ===== TIMEZONE HANDLING =====
+
+# Convert timestamp to different timezone (offset in hours)
+fn convert_timezone(timestamp, offset_hours) {
+    return timestamp + offset_hours * SECONDS_PER_HOUR
+}
+
+# Get timezone offset for location (simplified)
+fn get_timezone_offset(timezone) {
+    # This would need a full timezone database
+    # Simplified implementation
+    if timezone == "UTC" {
+        return 0
+    } else if timezone == "EST" {
+        return -5
+    } else if timezone == "PST" {
+        return -8
+    } else {
+        return 0
+    }
+}
+
+# ===== DURATION/HUMAN READABLE =====
+
+# Format duration in seconds as human readable string
+fn format_duration(seconds) {
+    if seconds < 60 {
+        return to_string(seconds) + " seconds"
+    } else if seconds < 3600 {
+        let minutes = seconds / 60
+        let remaining_seconds = seconds % 60
+        return to_string(minutes) + " minutes " + to_string(remaining_seconds) + " seconds"
+    } else if seconds < 86400 {
+        let hours = seconds / 3600
+        let remaining_minutes = (seconds % 3600) / 60
+        return to_string(hours) + " hours " + to_string(remaining_minutes) + " minutes"
+    } else {
+        let days = seconds / 86400
+        let remaining_hours = (seconds % 86400) / 3600
+        return to_string(days) + " days " + to_string(remaining_hours) + " hours"
+    }
+}
+
+# Parse duration string (e.g., "1h 30m 45s")
+fn parse_duration(duration_str) {
+    # Simplified parser
+    let total_seconds = 0
+    let parts = string_split(string_trim(duration_str), " ")
+
+    let i = 0
+    while i < array_length(parts) {
+        let part = parts[i]
+        if string_ends_with(part, "s") {
+            let num = string_to_int(string_substring(part, 0, string_length(part) - 1))
+            total_seconds = total_seconds + num
+        } else if string_ends_with(part, "m") {
+            let num = string_to_int(string_substring(part, 0, string_length(part) - 1))
+            total_seconds = total_seconds + num * 60
+        } else if string_ends_with(part, "h") {
+            let num = string_to_int(string_substring(part, 0, string_length(part) - 1))
+            total_seconds = total_seconds + num * 3600
+        } else if string_ends_with(part, "d") {
+            let num = string_to_int(string_substring(part, 0, string_length(part) - 1))
+            total_seconds = total_seconds + num * 86400
+        }
+        i = i + 1
+    }
+
+    return total_seconds
+}
+
+# ===== SLEEP/WAIT FUNCTIONS =====
+
+# Sleep for specified seconds
+fn sleep(seconds) {
+    # This would interface with system sleep function
+    return None
+}
+
+# Sleep for specified milliseconds
+fn sleep_ms(milliseconds) {
+    return sleep(milliseconds as float / 1000.0)
+}
+
+# ===== TIMER FUNCTIONS =====
+
+# Start a timer
+fn timer_start() {
+    return now()
+}
+
+# Get elapsed time from timer start
+fn timer_elapsed(start_time) {
+    return now() - start_time
+}
+
+# ===== CALENDAR FUNCTIONS =====
+
+# Check if date is weekend
+fn is_weekend(timestamp) {
+    let dow = day_of_week(timestamp)
+    return dow == 0 or dow == 6
+}
+
+# Check if date is weekday
+fn is_weekday(timestamp) {
+    return not is_weekend(timestamp)
+}
+
+# Get next weekday
+fn next_weekday(timestamp) {
+    let dow = day_of_week(timestamp)
+    if dow == 5 {  # Friday
+        return add_days(timestamp, 3)  # Skip weekend
+    } else if dow == 6 {  # Saturday
+        return add_days(timestamp, 2)  # Skip Sunday
+    } else {
+        return add_days(timestamp, 1)
+    }
+}
+
+# ===== BUSINESS DAYS =====
+
+# Check if date is business day (Monday-Friday)
+fn is_business_day(timestamp) {
+    return is_weekday(timestamp)
+}
+
+# Add business days
+fn add_business_days(timestamp, days) {
+    let current = timestamp
+    let added = 0
+
+    while added < days {
+        current = next_weekday(current)
+        added = added + 1
+    }
+
+    return current
+}

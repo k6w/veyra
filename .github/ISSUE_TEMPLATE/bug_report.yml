@@ -1,0 +1,87 @@
+name: Bug Report
+description: Report a bug in Veyra
+title: "[BUG] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the form below.
+  
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Tell us what went wrong
+    validations:
+      required: true
+  
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Create file `example.vey` with:
+        ```veyra
+        # Your code here
+        ```
+        2. Run: `veyra example.vey`
+        3. See error
+    validations:
+      required: true
+  
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: Describe the expected behavior
+    validations:
+      required: true
+  
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened (include error messages, output, etc.)
+      placeholder: Describe what actually happened
+    validations:
+      required: true
+  
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: What OS are you running?
+      placeholder: e.g., Windows 11, Ubuntu 22.04, macOS 14
+    validations:
+      required: true
+  
+  - type: input
+    id: rust-version
+    attributes:
+      label: Rust Version
+      description: Output of `rustc --version`
+      placeholder: e.g., rustc 1.70.0
+    validations:
+      required: false
+  
+  - type: input
+    id: veyra-version
+    attributes:
+      label: Veyra Version
+      description: Output of `veyra --version` (if available)
+      placeholder: e.g., veyra 1.0.0
+    validations:
+      required: false
+  
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem
+      placeholder: Add screenshots, logs, or other relevant information
+    validations:
+      required: false

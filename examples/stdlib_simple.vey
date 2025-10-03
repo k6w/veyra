@@ -1,0 +1,38 @@
+// Comprehensive Standard Library Showcase - Simplified
+// This demonstrates the power of Veyra's :: syntax and stdlib modules
+
+fun main() {
+    print("=== VEYRA STANDARD LIBRARY SHOWCASE ===")
+    print("")
+    
+    // Math Module
+    print("MATH MODULE:")
+    print("PI = " + core::to_string(math::PI))
+    print("E = " + core::to_string(math::E))
+    print("abs(-42) = " + core::to_string(math::abs(-42)))
+    print("sqrt(144) = " + core::to_string(math::sqrt(144)))
+    print("pow(2, 3) = " + core::to_string(math::pow(2, 3)))
+    print("floor(3.7) = " + core::to_string(math::floor(3.7)))
+    print("max(42, 17) = " + core::to_string(math::max(42, 17)))
+    print("")
+    
+    // Core Module 
+    print("CORE MODULE:")
+    let num = 42
+    print("Original number: " + core::to_string(num))
+    print("Type of number: " + core::type_of(num))
+    print("Int to float: " + core::to_string(core::to_float(num)))
+    print("")
+    
+    // String Module
+    print("STRING MODULE:")
+    let hello = "Hello World"
+    print("Original: " + hello)
+    print("Length: " + core::to_string(string::length(hello)))
+    print("Uppercase: " + string::to_upper(hello))
+    print("Lowercase: " + string::to_lower(hello))
+    print("Contains World: " + core::to_string(string::contains(hello, "World")))
+    print("")
+    
+    print("All standard library modules working with :: syntax!")
+}

@@ -1,0 +1,663 @@
+# Advanced Data Structures in Veyra
+# HashMap, Set, Tuple, Tree, Graph implementations
+
+print("=== Advanced Data Structures in Veyra ===")
+
+import std.collections
+
+print("\n--- Hash Maps ---")
+
+# Create a hash map
+let person = HashMap()
+person.set("name", "Alice")
+person.set("age", 30)
+person.set("city", "New York")
+person.set("occupation", "Engineer")
+
+print("Person: " + str(person))
+print("Name: " + person.get("name"))
+print("Age: " + str(person.get("age")))
+
+# HashMap methods
+print("Keys: " + str(person.keys()))
+print("Values: " + str(person.values()))
+print("Has 'age': " + str(person.has("age")))
+print("Size: " + str(person.size()))
+
+# Iteration
+print("Iterating over HashMap:")
+for entry in person.entries() {
+    print("  " + entry.key + ": " + str(entry.value))
+}
+
+# Remove entry
+person.remove("city")
+print("After removing 'city': " + str(person))
+
+print("\n--- Sets ---")
+
+# Create sets
+let numbers = Set([1, 2, 3, 4, 5])
+let evens = Set([2, 4, 6, 8])
+
+print("Numbers: " + str(numbers))
+print("Evens: " + str(evens))
+
+# Set operations
+print("Union: " + str(numbers.union(evens)))
+print("Intersection: " + str(numbers.intersection(evens)))
+print("Difference: " + str(numbers.difference(evens)))
+
+# Set methods
+numbers.add(6)
+print("After adding 6: " + str(numbers))
+
+print("Contains 3: " + str(numbers.contains(3)))
+print("Contains 10: " + str(numbers.contains(10)))
+
+numbers.remove(1)
+print("After removing 1: " + str(numbers))
+
+print("\n--- Tuples ---")
+
+# Create tuples (immutable ordered collections)
+let point2d = Tuple(10, 20)
+let point3d = Tuple(10, 20, 30)
+let mixed_tuple = Tuple("Alice", 30, true, [1, 2, 3])
+
+print("2D Point: " + str(point2d))
+print("3D Point: " + str(point3d))
+print("Mixed Tuple: " + str(mixed_tuple))
+
+# Tuple access
+print("X coordinate: " + str(point2d.get(0)))
+print("Y coordinate: " + str(point2d.get(1)))
+
+# Tuple unpacking
+let (x, y) = point2d
+print("Unpacked coordinates: x=" + str(x) + ", y=" + str(y))
+
+let (name, age, active, items) = mixed_tuple
+print("Unpacked: " + name + ", " + str(age) + ", " + str(active))
+
+print("\n--- Binary Search Tree ---")
+
+class BinarySearchTree {
+    fn init() {
+        self.root = None
+    }
+    
+    fn insert(value) {
+        self.root = self._insert_recursive(self.root, value)
+    }
+    
+    fn _insert_recursive(node, value) {
+        if node == None {
+            return {
+                "value": value,
+                "left": None,
+                "right": None
+            }
+        }
+        
+        if value < node["value"] {
+            node["left"] = self._insert_recursive(node["left"], value)
+        } elif value > node["value"] {
+            node["right"] = self._insert_recursive(node["right"], value)
+        }
+        
+        return node
+    }
+    
+    fn search(value) {
+        return self._search_recursive(self.root, value)
+    }
+    
+    fn _search_recursive(node, value) {
+        if node == None {
+            return false
+        }
+        
+        if value == node["value"] {
+            return true
+        } elif value < node["value"] {
+            return self._search_recursive(node["left"], value)
+        } else {
+            return self._search_recursive(node["right"], value)
+        }
+    }
+    
+    fn inorder_traversal() {
+        let result = []
+        self._inorder_recursive(self.root, result)
+        return result
+    }
+    
+    fn _inorder_recursive(node, result) {
+        if node != None {
+            self._inorder_recursive(node["left"], result)
+            push(result, node["value"])
+            self._inorder_recursive(node["right"], result)
+        }
+    }
+    
+    fn get_height() {
+        return self._height_recursive(self.root)
+    }
+    
+    fn _height_recursive(node) {
+        if node == None {
+            return 0
+        }
+        
+        let left_height = self._height_recursive(node["left"])
+        let right_height = self._height_recursive(node["right"])
+        
+        return 1 + max(left_height, right_height)
+    }
+}
+
+# BST demonstration
+let bst = BinarySearchTree()
+let values = [50, 30, 70, 20, 40, 60, 80]
+
+print("Inserting values: " + str(values))
+for value in values {
+    bst.insert(value)
+}
+
+print("Inorder traversal: " + str(bst.inorder_traversal()))
+print("Tree height: " + str(bst.get_height()))
+print("Search 40: " + str(bst.search(40)))
+print("Search 25: " + str(bst.search(25)))
+
+print("\n--- Linked List ---")
+
+class LinkedList {
+    fn init() {
+        self.head = None
+        self.size = 0
+    }
+    
+    fn append(value) {
+        let new_node = {
+            "value": value,
+            "next": None
+        }
+        
+        if self.head == None {
+            self.head = new_node
+        } else {
+            let current = self.head
+            while current["next"] != None {
+                current = current["next"]
+            }
+            current["next"] = new_node
+        }
+        
+        self.size = self.size + 1
+    }
+    
+    fn prepend(value) {
+        let new_node = {
+            "value": value,
+            "next": self.head
+        }
+        self.head = new_node
+        self.size = self.size + 1
+    }
+    
+    fn get(index) {
+        if index < 0 or index >= self.size {
+            throw "Index out of bounds"
+        }
+        
+        let current = self.head
+        for i in range(index) {
+            current = current["next"]
+        }
+        
+        return current["value"]
+    }
+    
+    fn remove(index) {
+        if index < 0 or index >= self.size {
+            throw "Index out of bounds"
+        }
+        
+        if index == 0 {
+            self.head = self.head["next"]
+        } else {
+            let current = self.head
+            for i in range(index - 1) {
+                current = current["next"]
+            }
+            current["next"] = current["next"]["next"]
+        }
+        
+        self.size = self.size - 1
+    }
+    
+    fn to_array() {
+        let result = []
+        let current = self.head
+        
+        while current != None {
+            push(result, current["value"])
+            current = current["next"]
+        }
+        
+        return result
+    }
+    
+    fn length() {
+        return self.size
+    }
+}
+
+# Linked List demonstration
+let list = LinkedList()
+list.append(1)
+list.append(2)
+list.append(3)
+list.prepend(0)
+
+print("Linked List: " + str(list.to_array()))
+print("Length: " + str(list.length()))
+print("Element at index 2: " + str(list.get(2)))
+
+list.remove(1)
+print("After removing index 1: " + str(list.to_array()))
+
+print("\n--- Queue (FIFO) ---")
+
+class Queue {
+    fn init() {
+        self.items = []
+    }
+    
+    fn enqueue(item) {
+        push(self.items, item)
+    }
+    
+    fn dequeue() {
+        if self.is_empty() {
+            throw "Queue is empty"
+        }
+        return pop_front(self.items)
+    }
+    
+    fn peek() {
+        if self.is_empty() {
+            throw "Queue is empty"
+        }
+        return self.items[0]
+    }
+    
+    fn is_empty() {
+        return len(self.items) == 0
+    }
+    
+    fn size() {
+        return len(self.items)
+    }
+    
+    fn to_array() {
+        return self.items[:]  # Copy array
+    }
+}
+
+# Queue demonstration
+let queue = Queue()
+queue.enqueue("First")
+queue.enqueue("Second")
+queue.enqueue("Third")
+
+print("Queue: " + str(queue.to_array()))
+print("Dequeue: " + queue.dequeue())
+print("Peek: " + queue.peek())
+print("Queue after dequeue: " + str(queue.to_array()))
+
+print("\n--- Stack (LIFO) ---")
+
+class Stack {
+    fn init() {
+        self.items = []
+    }
+    
+    fn push(item) {
+        push(self.items, item)
+    }
+    
+    fn pop() {
+        if self.is_empty() {
+            throw "Stack is empty"
+        }
+        return pop(self.items)
+    }
+    
+    fn peek() {
+        if self.is_empty() {
+            throw "Stack is empty"
+        }
+        return self.items[len(self.items) - 1]
+    }
+    
+    fn is_empty() {
+        return len(self.items) == 0
+    }
+    
+    fn size() {
+        return len(self.items)
+    }
+    
+    fn to_array() {
+        return self.items[:]
+    }
+}
+
+# Stack demonstration
+let stack = Stack()
+stack.push("Bottom")
+stack.push("Middle")
+stack.push("Top")
+
+print("Stack: " + str(stack.to_array()))
+print("Pop: " + stack.pop())
+print("Peek: " + stack.peek())
+print("Stack after pop: " + str(stack.to_array()))
+
+print("\n--- Graph ---")
+
+class Graph {
+    fn init(directed) {
+        self.vertices = {}
+        self.directed = directed
+    }
+    
+    fn add_vertex(vertex) {
+        if not self.vertices.has(vertex) {
+            self.vertices.set(vertex, [])
+        }
+    }
+    
+    fn add_edge(from_vertex, to_vertex, weight) {
+        if weight == None {
+            weight = 1
+        }
+        
+        self.add_vertex(from_vertex)
+        self.add_vertex(to_vertex)
+        
+        let edge = {"to": to_vertex, "weight": weight}
+        push(self.vertices.get(from_vertex), edge)
+        
+        if not self.directed {
+            let reverse_edge = {"to": from_vertex, "weight": weight}
+            push(self.vertices.get(to_vertex), reverse_edge)
+        }
+    }
+    
+    fn get_neighbors(vertex) {
+        return self.vertices.get(vertex)
+    }
+    
+    fn get_vertices() {
+        return self.vertices.keys()
+    }
+    
+    fn bfs(start_vertex) {
+        let visited = Set()
+        let queue = Queue()
+        let result = []
+        
+        queue.enqueue(start_vertex)
+        visited.add(start_vertex)
+        
+        while not queue.is_empty() {
+            let current = queue.dequeue()
+            push(result, current)
+            
+            for edge in self.get_neighbors(current) {
+                let neighbor = edge["to"]
+                if not visited.contains(neighbor) {
+                    visited.add(neighbor)
+                    queue.enqueue(neighbor)
+                }
+            }
+        }
+        
+        return result
+    }
+    
+    fn dfs(start_vertex) {
+        let visited = Set()
+        let result = []
+        
+        self._dfs_recursive(start_vertex, visited, result)
+        
+        return result
+    }
+    
+    fn _dfs_recursive(vertex, visited, result) {
+        visited.add(vertex)
+        push(result, vertex)
+        
+        for edge in self.get_neighbors(vertex) {
+            let neighbor = edge["to"]
+            if not visited.contains(neighbor) {
+                self._dfs_recursive(neighbor, visited, result)
+            }
+        }
+    }
+}
+
+# Graph demonstration
+let graph = Graph(false)  # Undirected graph
+
+# Add vertices and edges
+graph.add_edge("A", "B")
+graph.add_edge("A", "C")
+graph.add_edge("B", "D")
+graph.add_edge("C", "D")
+graph.add_edge("D", "E")
+
+print("Graph vertices: " + str(graph.get_vertices()))
+print("BFS from A: " + str(graph.bfs("A")))
+print("DFS from A: " + str(graph.dfs("A")))
+
+print("\n--- Trie (Prefix Tree) ---")
+
+class TrieNode {
+    fn init() {
+        self.children = HashMap()
+        self.is_end_of_word = false
+    }
+}
+
+class Trie {
+    fn init() {
+        self.root = TrieNode()
+    }
+    
+    fn insert(word) {
+        let current = self.root
+        
+        for char in word {
+            if not current.children.has(char) {
+                current.children.set(char, TrieNode())
+            }
+            current = current.children.get(char)
+        }
+        
+        current.is_end_of_word = true
+    }
+    
+    fn search(word) {
+        let current = self.root
+        
+        for char in word {
+            if not current.children.has(char) {
+                return false
+            }
+            current = current.children.get(char)
+        }
+        
+        return current.is_end_of_word
+    }
+    
+    fn starts_with(prefix) {
+        let current = self.root
+        
+        for char in prefix {
+            if not current.children.has(char) {
+                return false
+            }
+            current = current.children.get(char)
+        }
+        
+        return true
+    }
+    
+    fn get_words_with_prefix(prefix) {
+        let current = self.root
+        
+        # Navigate to prefix
+        for char in prefix {
+            if not current.children.has(char) {
+                return []
+            }
+            current = current.children.get(char)
+        }
+        
+        # Collect all words from this point
+        let words = []
+        self._collect_words(current, prefix, words)
+        return words
+    }
+    
+    fn _collect_words(node, current_word, words) {
+        if node.is_end_of_word {
+            push(words, current_word)
+        }
+        
+        for char in node.children.keys() {
+            let child = node.children.get(char)
+            self._collect_words(child, current_word + char, words)
+        }
+    }
+}
+
+# Trie demonstration
+let trie = Trie()
+let words = ["cat", "car", "card", "care", "careful", "cars", "carry"]
+
+print("Inserting words: " + str(words))
+for word in words {
+    trie.insert(word)
+}
+
+print("Search 'car': " + str(trie.search("car")))
+print("Search 'card': " + str(trie.search("card")))
+print("Search 'cart': " + str(trie.search("cart")))
+
+print("Starts with 'car': " + str(trie.starts_with("car")))
+print("Words with prefix 'car': " + str(trie.get_words_with_prefix("car")))
+
+print("\n--- Priority Queue (Min Heap) ---")
+
+class PriorityQueue {
+    fn init() {
+        self.heap = []
+    }
+    
+    fn push(item, priority) {
+        let element = {"item": item, "priority": priority}
+        push(self.heap, element)
+        self._heapify_up(len(self.heap) - 1)
+    }
+    
+    fn pop() {
+        if self.is_empty() {
+            throw "Priority queue is empty"
+        }
+        
+        if len(self.heap) == 1 {
+            return pop(self.heap)["item"]
+        }
+        
+        let root = self.heap[0]["item"]
+        self.heap[0] = pop(self.heap)
+        self._heapify_down(0)
+        
+        return root
+    }
+    
+    fn peek() {
+        if self.is_empty() {
+            throw "Priority queue is empty"
+        }
+        return self.heap[0]["item"]
+    }
+    
+    fn is_empty() {
+        return len(self.heap) == 0
+    }
+    
+    fn size() {
+        return len(self.heap)
+    }
+    
+    fn _heapify_up(index) {
+        if index == 0 {
+            return
+        }
+        
+        let parent_index = (index - 1) / 2
+        
+        if self.heap[index]["priority"] < self.heap[parent_index]["priority"] {
+            self._swap(index, parent_index)
+            self._heapify_up(parent_index)
+        }
+    }
+    
+    fn _heapify_down(index) {
+        let left_child = 2 * index + 1
+        let right_child = 2 * index + 2
+        let smallest = index
+        
+        if left_child < len(self.heap) and 
+           self.heap[left_child]["priority"] < self.heap[smallest]["priority"] {
+            smallest = left_child
+        }
+        
+        if right_child < len(self.heap) and 
+           self.heap[right_child]["priority"] < self.heap[smallest]["priority"] {
+            smallest = right_child
+        }
+        
+        if smallest != index {
+            self._swap(index, smallest)
+            self._heapify_down(smallest)
+        }
+    }
+    
+    fn _swap(i, j) {
+        let temp = self.heap[i]
+        self.heap[i] = self.heap[j]
+        self.heap[j] = temp
+    }
+}
+
+# Priority Queue demonstration
+let pq = PriorityQueue()
+pq.push("Low priority task", 3)
+pq.push("High priority task", 1)
+pq.push("Medium priority task", 2)
+
+print("Priority Queue:")
+while not pq.is_empty() {
+    print("  Processing: " + pq.pop())
+}
+
+print("\n🎉 Advanced Data Structures demonstration complete!")

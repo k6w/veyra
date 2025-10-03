@@ -1,0 +1,125 @@
+# Simple Veyra Program using built-in math operations
+# This works with current implementation
+
+print("=== Veyra Math Demo (Built-in Operations) ===")
+
+# Built-in mathematical operations
+print("\n--- Basic Arithmetic ---")
+let a = 15
+let b = 4
+
+print("a = " + str(a))
+print("b = " + str(b))
+print("a + b = " + str(a + b))
+print("a - b = " + str(a - b))
+print("a * b = " + str(a * b))
+print("a / b = " + str(a / b))
+print("a % b = " + str(a % b))
+print("a ** b = " + str(a ** b))
+
+# Mathematical functions using basic operations
+fn abs_value(x) {
+    if x < 0 {
+        return -x
+    } else {
+        return x
+    }
+}
+
+fn power(base, exp) {
+    let mut result = 1
+    let mut i = 0
+    
+    while i < exp {
+        result = result * base
+        i = i + 1
+    }
+    
+    return result
+}
+
+fn factorial(n) {
+    if n <= 1 {
+        return 1
+    }
+    
+    let mut result = 1
+    let mut i = 2
+    
+    while i <= n {
+        result = result * i
+        i = i + 1
+    }
+    
+    return result
+}
+
+fn fibonacci(n) {
+    if n <= 1 {
+        return n
+    }
+    
+    let mut a = 0
+    let mut b = 1
+    let mut i = 2
+    
+    while i <= n {
+        let temp = a + b
+        a = b
+        b = temp
+        i = i + 1
+    }
+    
+    return b
+}
+
+print("\n--- Custom Functions ---")
+print("Absolute value of -25: " + str(abs_value(-25)))
+print("2 to the power of 8: " + str(power(2, 8)))
+print("Factorial of 5: " + str(factorial(5)))
+print("10th Fibonacci number: " + str(fibonacci(10)))
+
+print("\n--- Arrays and Loops ---")
+let numbers = [1, 4, 9, 16, 25]
+print("Numbers: " + str(numbers))
+
+let mut sum = 0
+for num in numbers {
+    sum = sum + num
+}
+print("Sum of numbers: " + str(sum))
+
+print("\n--- Prime Number Check ---")
+fn is_prime(n) {
+    if n <= 1 {
+        return false
+    }
+    if n <= 3 {
+        return true
+    }
+    if n % 2 == 0 {
+        return false
+    }
+    
+    let mut i = 3
+    while i * i <= n {
+        if n % i == 0 {
+            return false
+        }
+        i = i + 2
+    }
+    
+    return true
+}
+
+let test_numbers = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+for num in test_numbers {
+    let prime = is_prime(num)
+    if prime {
+        print(str(num) + " is prime")
+    } else {
+        print(str(num) + " is not prime")
+    }
+}
+
+print("\n=== Math Demo Complete ===")

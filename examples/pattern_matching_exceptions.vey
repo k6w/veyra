@@ -1,0 +1,523 @@
+# Pattern Matching and Exception Handling in Veyra
+# Advanced control flow and error handling
+
+print("=== Pattern Matching and Exception Handling ===")
+
+print("\n--- Pattern Matching with Match Expressions ---")
+
+# Basic pattern matching
+fn describe_number(n) {
+    match n {
+        0 => "zero",
+        1 => "one",
+        2 => "two",
+        3 => "three",
+        _ => "other number"
+    }
+}
+
+for i in range(6) {
+    print(str(i) + " is " + describe_number(i))
+}
+
+# Pattern matching with conditions (guards)
+fn categorize_number(n) {
+    match n {
+        x if x < 0 => "negative",
+        0 => "zero",
+        x if x > 0 and x <= 10 => "small positive",
+        x if x > 10 and x <= 100 => "medium positive",
+        _ => "large positive"
+    }
+}
+
+let test_numbers = [-5, 0, 3, 25, 150]
+for num in test_numbers {
+    print(str(num) + " is " + categorize_number(num))
+}
+
+# Pattern matching with types
+fn process_value(value) {
+    match value {
+        int(n) => "Integer: " + str(n),
+        float(f) => "Float: " + str(f),
+        string(s) => "String: '" + s + "'",
+        bool(b) => "Boolean: " + str(b),
+        array(arr) => "Array with " + str(len(arr)) + " elements",
+        None => "None value",
+        _ => "Unknown type"
+    }
+}
+
+let test_values = [42, 3.14, "hello", true, [1, 2, 3], None]
+for value in test_values {
+    print(process_value(value))
+}
+
+# Pattern matching with destructuring
+fn analyze_point(point) {
+    match point {
+        {"x": 0, "y": 0} => "Origin point",
+        {"x": x, "y": 0} => "On X-axis at " + str(x),
+        {"x": 0, "y": y} => "On Y-axis at " + str(y),
+        {"x": x, "y": y} if x == y => "On diagonal at (" + str(x) + ", " + str(y) + ")",
+        {"x": x, "y": y} => "Point at (" + str(x) + ", " + str(y) + ")",
+        _ => "Invalid point"
+    }
+}
+
+let points = [
+    {"x": 0, "y": 0},
+    {"x": 5, "y": 0},
+    {"x": 0, "y": 3},
+    {"x": 4, "y": 4},
+    {"x": 2, "y": 7}
+]
+
+for point in points {
+    print(analyze_point(point))
+}
+
+# Array pattern matching
+fn analyze_array(arr) {
+    match arr {
+        [] => "Empty array",
+        [x] => "Single element: " + str(x),
+        [x, y] => "Two elements: " + str(x) + ", " + str(y),
+        [x, y, z] => "Three elements: " + str(x) + ", " + str(y) + ", " + str(z),
+        [first, ...rest] => "First: " + str(first) + ", rest: " + str(rest),
+        _ => "Complex array"
+    }
+}
+
+let test_arrays = [[], [1], [1, 2], [1, 2, 3], [1, 2, 3, 4, 5]]
+for arr in test_arrays {
+    print(analyze_array(arr))
+}
+
+print("\n--- Exception Handling ---")
+
+# Basic try-catch
+fn divide_safely(a, b) {
+    try {
+        return a / b
+    } catch DivisionByZeroError {
+        print("Cannot divide by zero!")
+        return None
+    } catch error {
+        print("Unexpected error: " + str(error))
+        return None
+    }
+}
+
+print("10 / 2 = " + str(divide_safely(10, 2)))
+print("10 / 0 = " + str(divide_safely(10, 0)))
+
+# Custom exceptions
+class CustomError extends Exception {
+    fn init(message) {
+        super.init("CustomError: " + message)
+        self.custom_data = message
+    }
+}
+
+class ValidationError extends Exception {
+    fn init(field, value) {
+        super.init("Validation failed for field '" + field + "' with value: " + str(value))
+        self.field = field
+        self.value = value
+    }
+}
+
+# Function that throws custom exceptions
+fn validate_age(age) {
+    if type(age) != "int" {
+        throw ValidationError("age", age)
+    }
+    
+    if age < 0 {
+        throw CustomError("Age cannot be negative")
+    }
+    
+    if age > 150 {
+        throw CustomError("Age seems unrealistic")
+    }
+    
+    return age
+}
+
+# Testing exception handling
+let test_ages = [25, -5, 200, "invalid", 30]
+for age in test_ages {
+    try {
+        let valid_age = validate_age(age)
+        print("Valid age: " + str(valid_age))
+    } catch ValidationError as e {
+        print("Validation error for field '" + e.field + "': " + str(e.value))
+    } catch CustomError as e {
+        print("Custom error: " + e.custom_data)
+    } catch error {
+        print("Unexpected error: " + str(error))
+    }
+}
+
+# Finally blocks
+fn process_file(filename) {
+    let file = None
+    
+    try {
+        print("Opening file: " + filename)
+        file = open(filename, "r")
+        
+        if filename == "nonexistent.txt" {
+            throw FileNotFoundError("File not found: " + filename)
+        }
+        
+        print("Processing file content...")
+        return "File processed successfully"
+        
+    } catch FileNotFoundError as e {
+        print("File error: " + str(e))
+        return None
+        
+    } catch PermissionError as e {
+        print("Permission denied: " + str(e))
+        return None
+        
+    } finally {
+        if file != None {
+            print("Closing file: " + filename)
+            file.close()
+        }
+        print("Cleanup completed")
+    }
+}
+
+let files = ["data.txt", "nonexistent.txt"]
+for filename in files {
+    let result = process_file(filename)
+    print("Result: " + str(result))
+    print()
+}
+
+# Exception propagation
+fn level_three() {
+    throw RuntimeError("Error from level three")
+}
+
+fn level_two() {
+    print("Level two calling level three")
+    level_three()  # This will propagate the exception
+}
+
+fn level_one() {
+    try {
+        print("Level one calling level two")
+        level_two()
+    } catch RuntimeError as e {
+        print("Caught exception in level one: " + str(e))
+        throw e  # Re-throw the exception
+    }
+}
+
+try {
+    level_one()
+} catch RuntimeError as e {
+    print("Finally caught exception at top level: " + str(e))
+}
+
+print("\n--- Result Type (Functional Error Handling) ---")
+
+# Result type for functional error handling
+enum Result {
+    Ok(value),
+    Err(error)
+}
+
+fn safe_divide(a, b) {
+    if b == 0 {
+        return Result.Err("Division by zero")
+    }
+    return Result.Ok(a / b)
+}
+
+fn safe_parse_int(s) {
+    try {
+        let value = int(s)
+        return Result.Ok(value)
+    } catch error {
+        return Result.Err("Cannot parse '" + s + "' as integer")
+    }
+}
+
+# Using Result type
+fn calculate_average(numbers_str) {
+    let total = 0
+    let count = 0
+    
+    for num_str in numbers_str {
+        match safe_parse_int(num_str) {
+            Result.Ok(value) => {
+                total = total + value
+                count = count + 1
+            },
+            Result.Err(error) => {
+                return Result.Err("Parse error: " + error)
+            }
+        }
+    }
+    
+    if count == 0 {
+        return Result.Err("No valid numbers provided")
+    }
+    
+    match safe_divide(total, count) {
+        Result.Ok(average) => Result.Ok(average),
+        Result.Err(error) => Result.Err("Division error: " + error)
+    }
+}
+
+# Test Result type
+let number_strings = ["10", "20", "30"]
+match calculate_average(number_strings) {
+    Result.Ok(avg) => print("Average: " + str(avg)),
+    Result.Err(error) => print("Error calculating average: " + error)
+}
+
+let invalid_strings = ["10", "abc", "30"]
+match calculate_average(invalid_strings) {
+    Result.Ok(avg) => print("Average: " + str(avg)),
+    Result.Err(error) => print("Error calculating average: " + error)
+}
+
+print("\n--- Option Type (Null Safety) ---")
+
+# Option type for null safety
+enum Option {
+    Some(value),
+    None
+}
+
+fn find_in_array(arr, target) {
+    for i in range(len(arr)) {
+        if arr[i] == target {
+            return Option.Some(i)
+        }
+    }
+    return Option.None
+}
+
+fn get_element_at(arr, index) {
+    if index < 0 or index >= len(arr) {
+        return Option.None
+    }
+    return Option.Some(arr[index])
+}
+
+# Using Option type
+let numbers = [10, 20, 30, 40, 50]
+
+match find_in_array(numbers, 30) {
+    Option.Some(index) => print("Found 30 at index " + str(index)),
+    Option.None => print("30 not found")
+}
+
+match find_in_array(numbers, 60) {
+    Option.Some(index) => print("Found 60 at index " + str(index)),
+    Option.None => print("60 not found")
+}
+
+match get_element_at(numbers, 2) {
+    Option.Some(value) => print("Element at index 2: " + str(value)),
+    Option.None => print("Index 2 is out of bounds")
+}
+
+match get_element_at(numbers, 10) {
+    Option.Some(value) => print("Element at index 10: " + str(value)),
+    Option.None => print("Index 10 is out of bounds")
+}
+
+print("\n--- Advanced Pattern Matching ---")
+
+# Nested pattern matching
+fn analyze_nested_data(data) {
+    match data {
+        {
+            "type": "user",
+            "info": {
+                "name": name,
+                "age": age
+            }
+        } if age >= 18 => "Adult user: " + name,
+        
+        {
+            "type": "user",
+            "info": {
+                "name": name,
+                "age": age
+            }
+        } => "Minor user: " + name,
+        
+        {
+            "type": "product",
+            "info": {
+                "name": name,
+                "price": price
+            }
+        } if price > 100 => "Expensive product: " + name,
+        
+        {
+            "type": "product",
+            "info": {
+                "name": name,
+                "price": price
+            }
+        } => "Affordable product: " + name,
+        
+        _ => "Unknown data type"
+    }
+}
+
+let test_data = [
+    {
+        "type": "user",
+        "info": {"name": "Alice", "age": 25}
+    },
+    {
+        "type": "user", 
+        "info": {"name": "Bob", "age": 16}
+    },
+    {
+        "type": "product",
+        "info": {"name": "Laptop", "price": 1200}
+    },
+    {
+        "type": "product",
+        "info": {"name": "Book", "price": 15}
+    }
+]
+
+for item in test_data {
+    print(analyze_nested_data(item))
+}
+
+# Pattern matching with regular expressions
+fn analyze_string_pattern(s) {
+    match s {
+        r"^\d+$" => "Numbers only",
+        r"^[a-zA-Z]+$" => "Letters only", 
+        r"^[a-zA-Z0-9]+$" => "Alphanumeric",
+        r".*@.*\..*" => "Email-like format",
+        r"^https?://.*" => "URL format",
+        _ => "Other format"
+    }
+}
+
+let test_strings = ["123", "hello", "test123", "user@example.com", "https://example.com", "mixed!@#"]
+for s in test_strings {
+    print("'" + s + "' -> " + analyze_string_pattern(s))
+}
+
+print("\n--- Error Recovery Strategies ---")
+
+# Circuit breaker pattern
+class CircuitBreaker {
+    fn init(failure_threshold, recovery_timeout) {
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN
+    }
+    
+    fn call(operation) {
+        match self.state {
+            "OPEN" => {
+                if self._should_attempt_reset() {
+                    self.state = "HALF_OPEN"
+                } else {
+                    throw CircuitBreakerOpenError("Circuit breaker is OPEN")
+                }
+            },
+            _ => {}
+        }
+        
+        try {
+            let result = operation()
+            self._on_success()
+            return result
+        } catch error {
+            self._on_failure()
+            throw error
+        }
+    }
+    
+    fn _on_success() {
+        self.failure_count = 0
+        self.state = "CLOSED"
+    }
+    
+    fn _on_failure() {
+        self.failure_count = self.failure_count + 1
+        self.last_failure_time = time()
+        
+        if self.failure_count >= self.failure_threshold {
+            self.state = "OPEN"
+        }
+    }
+    
+    fn _should_attempt_reset() {
+        return (time() - self.last_failure_time) > self.recovery_timeout
+    }
+    
+    fn get_state() {
+        return self.state
+    }
+}
+
+# Retry mechanism with exponential backoff
+fn retry_with_backoff(operation, max_attempts, base_delay) {
+    let attempt = 0
+    
+    while attempt < max_attempts {
+        try {
+            return operation()
+        } catch error {
+            attempt = attempt + 1
+            
+            if attempt >= max_attempts {
+                throw error
+            }
+            
+            let delay = base_delay * (2 ** (attempt - 1))
+            print("Attempt " + str(attempt) + " failed, retrying in " + str(delay) + "ms...")
+            sleep(delay)
+        }
+    }
+}
+
+# Example usage of error recovery
+fn unreliable_operation() {
+    if random() < 0.7 {  # 70% chance of failure
+        throw NetworkError("Connection failed")
+    }
+    return "Operation successful"
+}
+
+# Using circuit breaker
+let circuit_breaker = CircuitBreaker(3, 5000)  # 3 failures, 5 second timeout
+
+for i in range(10) {
+    try {
+        let result = circuit_breaker.call(unreliable_operation)
+        print("Success: " + result + " (State: " + circuit_breaker.get_state() + ")")
+    } catch CircuitBreakerOpenError as e {
+        print("Circuit breaker is open: " + str(e))
+    } catch error {
+        print("Operation failed: " + str(error) + " (State: " + circuit_breaker.get_state() + ")")
+    }
+    
+    sleep(1000)  # Wait 1 second between attempts
+}
+
+print("\n🎉 Pattern Matching and Exception Handling demonstration complete!")

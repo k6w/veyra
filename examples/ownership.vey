@@ -1,0 +1,85 @@
+# Memory Management and Ownership Example
+
+# Struct definition
+struct Person
+    name: string
+    age: int
+    email: string?  # Optional field
+
+# Implementation block
+impl Person
+    fn new(name: string, age: int) -> Person
+        return Person { name, age, email: None }
+    
+    fn with_email(name: string, age: int, email: string) -> Person
+        return Person { name, age, email: Some(email) }
+    
+    fn greet(self) -> string
+        return "Hello, I'm {self.name}"
+    
+    fn birthday(mut self)
+        self.age += 1
+
+# Ownership and borrowing
+fn process_person(person: &Person) -> string
+    # Borrowing - no ownership transfer
+    return "Processing {person.name}"
+
+fn take_ownership(person: Person) -> Person
+    # Takes ownership, returns it back
+    print("Took ownership of {person.name}")
+    return person
+
+# Collections with ownership
+fn manage_people()
+    # Vector of owned persons
+    mut people = [
+        Person.new("Alice", 30),
+        Person.new("Bob", 25),
+        Person.with_email("Charlie", 35, "charlie@example.com")
+    ]
+    
+    # Borrowing for iteration
+    for person in &people
+        info = process_person(person)
+        print(info)
+    
+    # Taking ownership from collection
+    alice = people.remove(0)  # Moves out of vector
+    alice = take_ownership(alice)
+    
+    # Put back
+    people.push(alice)
+    
+    # Modify in place
+    for person in &mut people
+        person.birthday()
+        print("{person.name} is now {person.age}")
+
+# Error handling with Result types
+fn parse_age(input: string) -> Result<int, string>
+    match input.parse_int()
+        Some(age) if age >= 0 -> Ok(age)
+        Some(_) -> Err("Age cannot be negative")
+        None -> Err("Invalid number format")
+
+fn create_person_from_input() -> Result<Person, string>
+    name = input("Enter name: ")
+    age_str = input("Enter age: ")
+    
+    age = parse_age(age_str)?  # Early return on error
+    
+    return Ok(Person.new(name, age))
+
+# Main function
+fn main()
+    print("Memory Management Example")
+    
+    manage_people()
+    
+    # Error handling
+    match create_person_from_input()
+        Ok(person) -> print("Created: {person.greet()}")
+        Err(error) -> print("Error: {error}")
+
+main()

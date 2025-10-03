@@ -1,0 +1,28 @@
+fn greet(name) {
+    print("Hello, " + name + "!")
+}
+
+fn add(a, b) {
+    print(a + b)
+}
+
+fn factorial(n) {
+    let mut result = 1
+    let mut i = 1
+    
+    while i <= n {
+        result = result * i
+        i = i + 1
+    }
+    
+    print(result)
+}
+
+greet("Alice")
+greet("Bob")
+
+add(5, 10)
+add(100, 200)
+
+factorial(5)
+factorial(6)

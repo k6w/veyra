@@ -1,0 +1,345 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Veyra",
+  "scopeName": "source.veyra",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#function-declaration"
+    },
+    {
+      "include": "#type-annotations"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#builtin-functions"
+    },
+    {
+      "include": "#function-call"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#punctuation"
+    },
+    {
+      "include": "#variables"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.veyra",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.line.number-sign.veyra",
+          "match": "#.*$"
+        },
+        {
+          "name": "comment.block.veyra",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "function-declaration": {
+      "patterns": [
+        {
+          "match": "\\b(fn)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.function.veyra"
+            },
+            "2": {
+              "name": "entity.name.function.veyra"
+            }
+          }
+        }
+      ]
+    },
+    "type-annotations": {
+      "patterns": [
+        {
+          "match": ":\\s*([a-zA-Z_][a-zA-Z0-9_]*(?:<[^>]+>)?(?:\\[[^\\]]*\\])?)",
+          "captures": {
+            "1": {
+              "name": "entity.name.type.veyra"
+            }
+          }
+        },
+        {
+          "match": "->\\s*([a-zA-Z_][a-zA-Z0-9_]*(?:<[^>]+>)?(?:\\[[^\\]]*\\])?)",
+          "captures": {
+            "1": {
+              "name": "entity.name.type.veyra"
+            }
+          }
+        },
+        {
+          "name": "entity.name.type.primitive.veyra",
+          "match": "\\b(i8|i16|i32|i64|i128|u8|u16|u32|u64|u128|f32|f64|bool|char|str|string|void)\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.conditional.veyra",
+          "match": "\\b(if|elif|else|match)\\b"
+        },
+        {
+          "name": "keyword.control.loop.veyra",
+          "match": "\\b(while|for|in|loop)\\b"
+        },
+        {
+          "name": "keyword.control.flow.veyra",
+          "match": "\\b(break|continue|return)\\b"
+        },
+        {
+          "name": "keyword.declaration.veyra",
+          "match": "\\b(let|fn|const)\\b"
+        },
+        {
+          "name": "keyword.other.veyra",
+          "match": "\\b(import|from|as|pub|mod|struct|enum|impl|trait|type)\\b"
+        },
+        {
+          "name": "keyword.operator.logical.veyra",
+          "match": "\\b(and|or|not)\\b"
+        },
+        {
+          "name": "keyword.control.exception.veyra",
+          "match": "\\b(try|catch|throw|finally)\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.veyra",
+          "match": "\\b(true|false)\\b"
+        },
+        {
+          "name": "constant.language.null.veyra",
+          "match": "\\b(None|null)\\b"
+        },
+        {
+          "name": "constant.language.veyra",
+          "match": "\\b(PI|E|PHI|TAU)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.veyra",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.veyra",
+              "match": "\\\\(n|r|t|\\\\|\"|'|0|x[0-9a-fA-F]{2}|u\\{[0-9a-fA-F]+\\})"
+            },
+            {
+              "name": "invalid.illegal.unrecognized-string-escape.veyra",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.veyra",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.veyra",
+              "match": "\\\\(n|r|t|\\\\|\"|'|0|x[0-9a-fA-F]{2}|u\\{[0-9a-fA-F]+\\})"
+            },
+            {
+              "name": "invalid.illegal.unrecognized-string-escape.veyra",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.backtick.veyra",
+          "begin": "`",
+          "end": "`",
+          "patterns": [
+            {
+              "name": "constant.character.escape.veyra",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.binary.veyra",
+          "match": "\\b0b[01_]+\\b"
+        },
+        {
+          "name": "constant.numeric.octal.veyra",
+          "match": "\\b0o[0-7_]+\\b"
+        },
+        {
+          "name": "constant.numeric.hex.veyra",
+          "match": "\\b0x[0-9a-fA-F_]+\\b"
+        },
+        {
+          "name": "constant.numeric.float.veyra",
+          "match": "\\b\\d[0-9_]*\\.[0-9_]+([eE][+-]?[0-9_]+)?\\b"
+        },
+        {
+          "name": "constant.numeric.float.veyra",
+          "match": "\\b\\d[0-9_]*[eE][+-]?[0-9_]+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.veyra",
+          "match": "\\b\\d[0-9_]*\\b"
+        }
+      ]
+    },
+    "builtin-functions": {
+      "patterns": [
+        {
+          "name": "support.function.builtin.veyra",
+          "match": "\\b(print|println|len|type_of|is_int|is_float|is_string|is_bool|is_array|is_none|to_int|to_float|to_string|to_bool|deep_copy)\\b"
+        },
+        {
+          "name": "support.function.math.veyra",
+          "match": "\\b(abs|sign|min|max|clamp|pow|sqrt|cbrt|exp|ln|log10|log2|sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|factorial|binomial|permutation|floor|ceil|round|mean|variance|std_dev)\\b"
+        },
+        {
+          "name": "support.function.string.veyra",
+          "match": "\\b(string_length|string_concat|string_substring|string_index_of|string_last_index_of|string_starts_with|string_ends_with|string_contains|string_to_upper|string_to_lower|string_trim|string_trim_start|string_trim_end|string_replace|string_replace_first|string_split|string_join|string_repeat|string_reverse|string_pad_left|string_pad_right|string_is_numeric|string_is_alpha|string_is_alphanumeric|string_is_whitespace)\\b"
+        },
+        {
+          "name": "support.function.array.veyra",
+          "match": "\\b(array_push|array_pop|array_unshift|array_shift|array_insert|array_remove_at|array_remove|array_clear|array_contains|array_index_of|array_last_index_of|array_slice|array_concat|array_reverse|array_sort|array_sort_by|array_map|array_filter|array_reduce|array_find|array_find_index|array_every|array_some|array_unique|array_flatten|array_chunk|array_zip|array_min|array_max|array_sum)\\b"
+        },
+        {
+          "name": "support.function.io.veyra",
+          "match": "\\b(read_file|write_file|append_file|read_lines|write_lines|file_exists|file_size|file_modified_time|delete_file|copy_file|move_file|create_directory|remove_directory|directory_exists|list_directory|list_files|list_directories|current_directory|change_directory|absolute_path|relative_path|path_join|path_dirname|path_basename|path_extension|path_stem)\\b"
+        },
+        {
+          "name": "support.function.net.veyra",
+          "match": "\\b(http_get|http_post|http_put|http_delete|http_patch|http_head|http_options|json_encode|json_decode|json_is_valid|url_parse|url_build|url_encode|url_decode|base64_encode|base64_decode|websocket_connect|websocket_send|websocket_receive|websocket_close|form_encode|form_decode)\\b"
+        },
+        {
+          "name": "support.function.datetime.veyra",
+          "match": "\\b(now|current_time|timestamp_to_struct|struct_to_timestamp|format_datetime|parse_datetime|add_seconds|add_minutes|add_hours|add_days|add_weeks|add_months|add_years|diff_seconds|diff_minutes|diff_hours|diff_days|is_leap_year|days_in_month|days_in_year|day_of_week|day_of_year|week_of_year|start_of_day|end_of_day|start_of_week|end_of_week|start_of_month|end_of_month|start_of_year|end_of_year)\\b"
+        }
+      ]
+    },
+    "function-call": {
+      "patterns": [
+        {
+          "match": "([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.call.veyra"
+            }
+          }
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.arithmetic.veyra",
+          "match": "\\+\\+|\\-\\-|\\+|\\-|\\*\\*|\\*|/|%"
+        },
+        {
+          "name": "keyword.operator.comparison.veyra",
+          "match": "==|!=|<=|>=|<|>"
+        },
+        {
+          "name": "keyword.operator.assignment.veyra",
+          "match": "\\+=|\\-=|\\*=|/=|%=|&=|\\|=|\\^=|<<=|>>=|="
+        },
+        {
+          "name": "keyword.operator.bitwise.veyra",
+          "match": "&&|\\|\\||&|\\||\\^|<<|>>|~"
+        },
+        {
+          "name": "keyword.operator.logical.veyra",
+          "match": "\\b(and|or|not)\\b"
+        },
+        {
+          "name": "keyword.operator.arrow.veyra",
+          "match": "->|=>"
+        },
+        {
+          "name": "keyword.operator.reference.veyra",
+          "match": "&(?!&)|\\*(?!\\*)"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.definition.block.veyra",
+          "match": "[{}]"
+        },
+        {
+          "name": "punctuation.definition.array.veyra",
+          "match": "[\\[\\]]"
+        },
+        {
+          "name": "punctuation.definition.parameters.veyra",
+          "match": "[()]"
+        },
+        {
+          "name": "punctuation.separator.veyra",
+          "match": "[,;]"
+        },
+        {
+          "name": "punctuation.accessor.veyra",
+          "match": "\\."
+        },
+        {
+          "name": "punctuation.separator.colon.veyra",
+          "match": ":"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "match": "\\b(let)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.veyra"
+            },
+            "2": {
+              "name": "variable.other.declaration.veyra"
+            }
+          }
+        },
+        {
+          "name": "variable.other.veyra",
+          "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    }
+  }
+}

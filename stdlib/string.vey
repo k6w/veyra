@@ -1,0 +1,594 @@
+# Veyra Standard Library - String Module
+# Comprehensive string manipulation and analysis functions
+
+# ===== BASIC STRING OPERATIONS =====
+
+# Get string length
+fn string_length(s) {
+    return len(s)
+}
+
+# Check if string is empty
+fn string_is_empty(s) {
+    return string_length(s) == 0
+}
+
+# Get character at index
+fn string_char_at(s, index) {
+    if index < 0 or index >= string_length(s) {
+        return ""
+    }
+    return s[index]
+}
+
+# Get substring
+fn string_substring(s, start, end) {
+    let length = string_length(s)
+    let actual_start = max(0, min(start, length))
+    let actual_end = max(actual_start, min(end, length))
+
+    let result = ""
+    let i = actual_start
+
+    while i < actual_end {
+        result = result + string_char_at(s, i)
+        i = i + 1
+    }
+
+    return result
+}
+
+# ===== STRING SEARCHING =====
+
+# Find first occurrence of substring
+fn string_index_of(s, substring) {
+    let s_len = string_length(s)
+    let sub_len = string_length(substring)
+
+    if sub_len == 0 {
+        return 0
+    }
+
+    if sub_len > s_len {
+        return -1
+    }
+
+    let i = 0
+    while i <= s_len - sub_len {
+        let j = 0
+        let found = true
+
+        while j < sub_len {
+            if string_char_at(s, i + j) != string_char_at(substring, j) {
+                found = false
+                break
+            }
+            j = j + 1
+        }
+
+        if found {
+            return i
+        }
+
+        i = i + 1
+    }
+
+    return -1
+}
+
+# Find last occurrence of substring
+fn string_last_index_of(s, substring) {
+    let s_len = string_length(s)
+    let sub_len = string_length(substring)
+
+    if sub_len == 0 {
+        return s_len
+    }
+
+    if sub_len > s_len {
+        return -1
+    }
+
+    let i = s_len - sub_len
+    while i >= 0 {
+        let j = 0
+        let found = true
+
+        while j < sub_len {
+            if string_char_at(s, i + j) != string_char_at(substring, j) {
+                found = false
+                break
+            }
+            j = j + 1
+        }
+
+        if found {
+            return i
+        }
+
+        i = i - 1
+    }
+
+    return -1
+}
+
+# Check if string contains substring
+fn string_contains(s, substring) {
+    return string_index_of(s, substring) != -1
+}
+
+# Check if string starts with prefix
+fn string_starts_with(s, prefix) {
+    let prefix_len = string_length(prefix)
+    if prefix_len > string_length(s) {
+        return false
+    }
+
+    let i = 0
+    while i < prefix_len {
+        if string_char_at(s, i) != string_char_at(prefix, i) {
+            return false
+        }
+        i = i + 1
+    }
+
+    return true
+}
+
+# Check if string ends with suffix
+fn string_ends_with(s, suffix) {
+    let s_len = string_length(s)
+    let suffix_len = string_length(suffix)
+
+    if suffix_len > s_len {
+        return false
+    }
+
+    let start = s_len - suffix_len
+    let i = 0
+
+    while i < suffix_len {
+        if string_char_at(s, start + i) != string_char_at(suffix, i) {
+            return false
+        }
+        i = i + 1
+    }
+
+    return true
+}
+
+# ===== STRING MODIFICATION =====
+
+# Convert to uppercase
+fn string_to_upper(s) {
+    let result = ""
+    let i = 0
+    let length = string_length(s)
+
+    while i < length {
+        let c = string_char_at(s, i)
+        if c >= 'a' and c <= 'z' {
+            result = result + char_from_int(char_to_int(c) - 32)
+        } else {
+            result = result + c
+        }
+        i = i + 1
+    }
+
+    return result
+}
+
+# Convert to lowercase
+fn string_to_lower(s) {
+    let result = ""
+    let i = 0
+    let length = string_length(s)
+
+    while i < length {
+        let c = string_char_at(s, i)
+        if c >= 'A' and c <= 'Z' {
+            result = result + char_from_int(char_to_int(c) + 32)
+        } else {
+            result = result + c
+        }
+        i = i + 1
+    }
+
+    return result
+}
+
+# Capitalize first letter
+fn string_capitalize(s) {
+    if string_is_empty(s) {
+        return s
+    }
+
+    let first = string_char_at(s, 0)
+    let rest = string_substring(s, 1, string_length(s))
+
+    if first >= 'a' and first <= 'z' {
+        first = char_from_int(char_to_int(first) - 32)
+    }
+
+    return first + rest
+}
+
+# Title case
+fn string_title(s) {
+    let result = ""
+    let capitalize_next = true
+    let i = 0
+    let length = string_length(s)
+
+    while i < length {
+        let c = string_char_at(s, i)
+
+        if capitalize_next and c >= 'a' and c <= 'z' {
+            result = result + char_from_int(char_to_int(c) - 32)
+            capitalize_next = false
+        } else if not capitalize_next and c >= 'A' and c <= 'Z' {
+            result = result + char_from_int(char_to_int(c) + 32)
+        } else {
+            result = result + c
+        }
+
+        if c == ' ' or c == '\t' or c == '\n' {
+            capitalize_next = true
+        } else {
+            capitalize_next = false
+        }
+
+        i = i + 1
+    }
+
+    return result
+}
+
+# ===== STRING SPLITTING AND JOINING =====
+
+# Split string by delimiter
+fn string_split(s, delimiter) {
+    let result = []
+    let current = ""
+    let i = 0
+    let length = string_length(s)
+    let delim_len = string_length(delimiter)
+
+    if delim_len == 0 {
+        # Split into characters
+        while i < length {
+            result = array_push(result, string_char_at(s, i))
+            i = i + 1
+        }
+        return result
+    }
+
+    while i < length {
+        if string_starts_with(string_substring(s, i, length), delimiter) {
+            result = array_push(result, current)
+            current = ""
+            i = i + delim_len
+        } else {
+            current = current + string_char_at(s, i)
+            i = i + 1
+        }
+    }
+
+    result = array_push(result, current)
+    return result
+}
+
+# Join array of strings with delimiter
+fn string_join(strings, delimiter) {
+    if array_length(strings) == 0 {
+        return ""
+    }
+
+    let result = strings[0]
+    let i = 1
+    let length = array_length(strings)
+
+    while i < length {
+        result = result + delimiter + strings[i]
+        i = i + 1
+    }
+
+    return result
+}
+
+# ===== STRING REPLACEMENT =====
+
+# Replace first occurrence
+fn string_replace_first(s, old_sub, new_sub) {
+    let index = string_index_of(s, old_sub)
+    if index == -1 {
+        return s
+    }
+
+    let before = string_substring(s, 0, index)
+    let after = string_substring(s, index + string_length(old_sub), string_length(s))
+
+    return before + new_sub + after
+}
+
+# Replace all occurrences
+fn string_replace_all(s, old_sub, new_sub) {
+    let result = s
+    let old_len = string_length(old_sub)
+
+    if old_len == 0 {
+        return result
+    }
+
+    let index = string_index_of(result, old_sub)
+    while index != -1 {
+        let before = string_substring(result, 0, index)
+        let after = string_substring(result, index + old_len, string_length(result))
+        result = before + new_sub + after
+        index = string_index_of(result, old_sub)
+    }
+
+    return result
+}
+
+# ===== STRING PADDING =====
+
+# Pad left with character
+fn string_pad_left(s, width, pad_char) {
+    let current_len = string_length(s)
+    if current_len >= width {
+        return s
+    }
+
+    let padding_needed = width - current_len
+    let padding = ""
+
+    let i = 0
+    while i < padding_needed {
+        padding = padding + pad_char
+        i = i + 1
+    }
+
+    return padding + s
+}
+
+# Pad right with character
+fn string_pad_right(s, width, pad_char) {
+    let current_len = string_length(s)
+    if current_len >= width {
+        return s
+    }
+
+    let padding_needed = width - current_len
+    let padding = ""
+
+    let i = 0
+    while i < padding_needed {
+        padding = padding + pad_char
+        i = i + 1
+    }
+
+    return s + padding
+}
+
+# ===== STRING FORMATTING =====
+
+# Format string with arguments
+fn string_format(format_str, args) {
+    let result = ""
+    let arg_index = 0
+    let i = 0
+    let length = string_length(format_str)
+
+    while i < length {
+        let c = string_char_at(format_str, i)
+
+        if c == '{' and i + 1 < length and string_char_at(format_str, i + 1) == '}' {
+            if arg_index < array_length(args) {
+                result = result + to_string(args[arg_index])
+                arg_index = arg_index + 1
+            }
+            i = i + 2
+        } else {
+            result = result + c
+            i = i + 1
+        }
+    }
+
+    return result
+}
+
+# ===== STRING VALIDATION =====
+
+# Check if string is numeric
+fn string_is_numeric(s) {
+    if string_is_empty(s) {
+        return false
+    }
+
+    let i = 0
+    let length = string_length(s)
+    let has_dot = false
+
+    if string_char_at(s, 0) == '-' {
+        i = 1
+    }
+
+    while i < length {
+        let c = string_char_at(s, i)
+
+        if c == '.' {
+            if has_dot {
+                return false
+            }
+            has_dot = true
+        } else if c < '0' or c > '9' {
+            return false
+        }
+
+        i = i + 1
+    }
+
+    return true
+}
+
+# Check if string is alphabetic
+fn string_is_alpha(s) {
+    if string_is_empty(s) {
+        return false
+    }
+
+    let i = 0
+    let length = string_length(s)
+
+    while i < length {
+        let c = string_char_at(s, i)
+        if not ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z')) {
+            return false
+        }
+        i = i + 1
+    }
+
+    return true
+}
+
+# Check if string is alphanumeric
+fn string_is_alphanumeric(s) {
+    if string_is_empty(s) {
+        return false
+    }
+
+    let i = 0
+    let length = string_length(s)
+
+    while i < length {
+        let c = string_char_at(s, i)
+        if not ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '0' and c <= '9')) {
+            return false
+        }
+        i = i + 1
+    }
+
+    return true
+}
+
+# ===== STRING UTILITIES =====
+
+# Reverse string
+fn string_reverse(s) {
+    let result = ""
+    let i = string_length(s) - 1
+
+    while i >= 0 {
+        result = result + string_char_at(s, i)
+        i = i - 1
+    }
+
+    return result
+}
+
+# Count occurrences of substring
+fn string_count(s, substring) {
+    let count = 0
+    let sub_len = string_length(substring)
+
+    if sub_len == 0 {
+        return 0
+    }
+
+    let index = string_index_of(s, substring)
+    while index != -1 {
+        count = count + 1
+        index = string_index_of(string_substring(s, index + sub_len, string_length(s)), substring)
+        if index != -1 {
+            index = index + (string_length(s) - string_length(string_substring(s, index + sub_len, string_length(s))))
+        }
+    }
+
+    return count
+}
+
+# Remove whitespace from start and end
+fn string_trim(s) {
+    let start = 0
+    let end = string_length(s)
+
+    # Find start
+    while start < end {
+        let c = string_char_at(s, start)
+        if c != ' ' and c != '\t' and c != '\n' and c != '\r' {
+            break
+        }
+        start = start + 1
+    }
+
+    # Find end
+    while end > start {
+        let c = string_char_at(s, end - 1)
+        if c != ' ' and c != '\t' and c != '\n' and c != '\r' {
+            break
+        }
+        end = end - 1
+    }
+
+    return string_substring(s, start, end)
+}
+
+# Remove whitespace from start
+fn string_trim_left(s) {
+    let start = 0
+    let length = string_length(s)
+
+    while start < length {
+        let c = string_char_at(s, start)
+        if c != ' ' and c != '\t' and c != '\n' and c != '\r' {
+            break
+        }
+        start = start + 1
+    }
+
+    return string_substring(s, start, length)
+}
+
+# Remove whitespace from end
+fn string_trim_right(s) {
+    let length = string_length(s)
+    let end = length
+
+    while end > 0 {
+        let c = string_char_at(s, end - 1)
+        if c != ' ' and c != '\t' and c != '\n' and c != '\r' {
+            break
+        }
+        end = end - 1
+    }
+
+    return string_substring(s, 0, end)
+}
+
+# ===== CHARACTER UTILITIES =====
+
+# Check if character is whitespace
+fn char_is_whitespace(c) {
+    return c == ' ' or c == '\t' or c == '\n' or c == '\r'
+}
+
+# Check if character is digit
+fn char_is_digit(c) {
+    return c >= '0' and c <= '9'
+}
+
+# Check if character is letter
+fn char_is_letter(c) {
+    return (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z')
+}
+
+# Check if character is uppercase
+fn char_is_upper(c) {
+    return c >= 'A' and c <= 'Z'
+}
+
+# Check if character is lowercase
+fn char_is_lower(c) {
+    return c >= 'a' and c <= 'z'
+}

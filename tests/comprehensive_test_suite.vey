@@ -1,0 +1,604 @@
+// Veyra Comprehensive Test Suite
+// This file contains integration tests for all major language features
+
+// Basic syntax and operations
+fn test_basic_arithmetic() {
+    let a = 10;
+    let b = 5;
+    
+    assert_eq(a + b, 15);
+    assert_eq(a - b, 5);
+    assert_eq(a * b, 50);
+    assert_eq(a / b, 2);
+    assert_eq(a % b, 0);
+    
+    println("✓ Basic arithmetic tests passed");
+}
+
+fn test_variables_and_types() {
+    // Integer types
+    let int8: i8 = 127;
+    let int16: i16 = 32767;
+    let int32: i32 = 2147483647;
+    let int64: i64 = 9223372036854775807;
+    
+    // Floating point types
+    let float32: f32 = 3.14159;
+    let float64: f64 = 2.718281828459045;
+    
+    // Boolean and character
+    let bool_val: bool = true;
+    let char_val: char = 'V';
+    
+    // String types
+    let string_slice: str = "Hello";
+    let string_owned: String = "World!";
+    
+    assert_eq(bool_val, true);
+    assert_eq(char_val, 'V');
+    
+    println("✓ Variable and type tests passed");
+}
+
+fn test_control_flow() {
+    // If-else statements
+    let x = 10;
+    let result = if x > 5 {
+        "greater"
+    } else {
+        "lesser"
+    };
+    assert_eq(result, "greater");
+    
+    // While loops
+    let mut counter = 0;
+    while counter < 5 {
+        counter += 1;
+    }
+    assert_eq(counter, 5);
+    
+    // For loops
+    let mut sum = 0;
+    for i in 0..10 {
+        sum += i;
+    }
+    assert_eq(sum, 45);
+    
+    println("✓ Control flow tests passed");
+}
+
+fn test_functions() {
+    // Simple function
+    fn add(a: i32, b: i32) -> i32 {
+        return a + b;
+    }
+    
+    // Function with multiple parameters
+    fn multiply_and_add(a: i32, b: i32, c: i32) -> i32 {
+        return (a * b) + c;
+    }
+    
+    // Recursive function
+    fn factorial(n: i32) -> i32 {
+        if n <= 1 {
+            return 1;
+        } else {
+            return n * factorial(n - 1);
+        }
+    }
+    
+    assert_eq(add(2, 3), 5);
+    assert_eq(multiply_and_add(2, 3, 4), 10);
+    assert_eq(factorial(5), 120);
+    
+    println("✓ Function tests passed");
+}
+
+fn test_arrays_and_collections() {
+    // Arrays
+    let numbers = [1, 2, 3, 4, 5];
+    assert_eq(numbers.length(), 5);
+    assert_eq(numbers[0], 1);
+    assert_eq(numbers[4], 5);
+    
+    // Dynamic arrays (vectors)
+    let mut vec = Vector::new();
+    vec.push(10);
+    vec.push(20);
+    vec.push(30);
+    
+    assert_eq(vec.len(), 3);
+    assert_eq(vec.get(0), Some(10));
+    assert_eq(vec.pop(), Some(30));
+    
+    // HashMap
+    let mut map = HashMap::new();
+    map.insert("key1", "value1");
+    map.insert("key2", "value2");
+    
+    assert_eq(map.get("key1"), Some("value1"));
+    assert_eq(map.len(), 2);
+    
+    println("✓ Arrays and collections tests passed");
+}
+
+fn test_classes_and_inheritance() {
+    // Base class
+    class Animal {
+        protected name: String;
+        protected age: i32;
+        
+        fn new(name: String, age: i32) -> Animal {
+            return Animal { name, age };
+        }
+        
+        fn get_name() -> String {
+            return self.name;
+        }
+        
+        virtual fn make_sound() -> String {
+            return "Generic animal sound";
+        }
+        
+        abstract fn get_species() -> String;
+    }
+    
+    // Derived class
+    class Dog extends Animal {
+        private breed: String;
+        
+        fn new(name: String, age: i32, breed: String) -> Dog {
+            return Dog { name, age, breed };
+        }
+        
+        override fn make_sound() -> String {
+            return "Woof!";
+        }
+        
+        fn get_species() -> String {
+            return "Canis lupus";
+        }
+        
+        fn get_breed() -> String {
+            return self.breed;
+        }
+    }
+    
+    let dog = Dog::new("Buddy", 3, "Golden Retriever");
+    assert_eq(dog.get_name(), "Buddy");
+    assert_eq(dog.make_sound(), "Woof!");
+    assert_eq(dog.get_species(), "Canis lupus");
+    assert_eq(dog.get_breed(), "Golden Retriever");
+    
+    println("✓ Classes and inheritance tests passed");
+}
+
+fn test_traits_and_generics() {
+    // Trait definition
+    trait Drawable {
+        fn draw(self) -> String;
+    }
+    
+    trait Resizable {
+        fn resize(self, width: f64, height: f64);
+    }
+    
+    // Generic class implementing traits
+    class Rectangle[T] implements Drawable, Resizable where T: Display {
+        width: T;
+        height: T;
+        
+        fn new(width: T, height: T) -> Rectangle[T] {
+            return Rectangle { width, height };
+        }
+        
+        fn draw(self) -> String {
+            return format!("Rectangle({}x{})", self.width, self.height);
+        }
+        
+        fn resize(self, width: T, height: T) {
+            self.width = width;
+            self.height = height;
+        }
+        
+        fn area(self) -> T where T: Multiply {
+            return self.width * self.height;
+        }
+    }
+    
+    let rect = Rectangle::new(10.0, 20.0);
+    assert_eq(rect.draw(), "Rectangle(10x20)");
+    assert_eq(rect.area(), 200.0);
+    
+    println("✓ Traits and generics tests passed");
+}
+
+fn test_pattern_matching() {
+    enum Color {
+        Red,
+        Green,
+        Blue,
+        RGB(u8, u8, u8),
+        HSL { hue: f32, saturation: f32, lightness: f32 }
+    }
+    
+    fn describe_color(color: Color) -> String {
+        match color {
+            Color::Red => "Pure red",
+            Color::Green => "Pure green",
+            Color::Blue => "Pure blue",
+            Color::RGB(r, g, b) => format!("RGB({}, {}, {})", r, g, b),
+            Color::HSL { hue, saturation, lightness } => {
+                format!("HSL({}°, {}%, {}%)", hue, saturation * 100.0, lightness * 100.0)
+            }
+        }
+    }
+    
+    // Test pattern matching
+    assert_eq(describe_color(Color::Red), "Pure red");
+    assert_eq(describe_color(Color::RGB(255, 0, 0)), "RGB(255, 0, 0)");
+    
+    let hsl_color = Color::HSL { hue: 120.0, saturation: 0.5, lightness: 0.75 };
+    assert_eq(describe_color(hsl_color), "HSL(120°, 50%, 75%)");
+    
+    // Pattern matching with guards
+    fn categorize_number(n: i32) -> String {
+        match n {
+            x if x < 0 => "Negative",
+            0 => "Zero",
+            1..=10 => "Small positive",
+            11..=100 => "Medium positive",
+            x if x > 100 => "Large positive",
+            _ => "Unknown"
+        }
+    }
+    
+    assert_eq(categorize_number(-5), "Negative");
+    assert_eq(categorize_number(0), "Zero");
+    assert_eq(categorize_number(5), "Small positive");
+    assert_eq(categorize_number(50), "Medium positive");
+    assert_eq(categorize_number(150), "Large positive");
+    
+    println("✓ Pattern matching tests passed");
+}
+
+async fn test_async_programming() {
+    // Async function
+    async fn fetch_data(id: i32) -> Result[String, String] {
+        await sleep(Duration::from_millis(100));
+        if id > 0 {
+            return Ok(format!("Data for ID: {}", id));
+        } else {
+            return Err("Invalid ID".to_string());
+        }
+    }
+    
+    // Test basic async/await
+    let result = await fetch_data(42);
+    assert_eq(result, Ok("Data for ID: 42".to_string()));
+    
+    let error_result = await fetch_data(-1);
+    assert_eq(error_result, Err("Invalid ID".to_string()));
+    
+    // Test parallel execution
+    let futures = [
+        fetch_data(1),
+        fetch_data(2),
+        fetch_data(3)
+    ];
+    
+    let results = await Promise::all(futures);
+    assert_eq(results.len(), 3);
+    
+    println("✓ Async programming tests passed");
+}
+
+async fn test_channels_and_actors() {
+    // Channel communication
+    let (sender, receiver) = channel::new[String](10);
+    
+    // Spawn producer task
+    spawn(async move {
+        for i in 0..5 {
+            await sender.send(format!("Message {}", i))?;
+        }
+        sender.close();
+    });
+    
+    // Consume messages
+    let mut messages = Vec::new();
+    while let Some(message) = await receiver.receive() {
+        messages.push(message);
+    }
+    
+    assert_eq(messages.len(), 5);
+    assert_eq(messages[0], "Message 0");
+    assert_eq(messages[4], "Message 4");
+    
+    // Actor system test
+    enum CounterMessage {
+        Increment,
+        Decrement,
+        GetValue(ChannelSender[i32])
+    }
+    
+    struct CounterActor {
+        value: i32;
+    }
+    
+    impl Actor[CounterActor, CounterMessage] for CounterActor {
+        fn new() -> CounterActor {
+            return CounterActor { value: 0 };
+        }
+        
+        async fn handle(mut self, message: CounterMessage) -> CounterActor {
+            match message {
+                CounterMessage::Increment => {
+                    self.value += 1;
+                },
+                CounterMessage::Decrement => {
+                    self.value -= 1;
+                },
+                CounterMessage::GetValue(reply) => {
+                    let _ = reply.send(self.value);
+                }
+            }
+            return self;
+        }
+    }
+    
+    let counter = CounterActor::spawn();
+    
+    // Send messages to actor
+    await counter.send(CounterMessage::Increment);
+    await counter.send(CounterMessage::Increment);
+    await counter.send(CounterMessage::Decrement);
+    
+    // Get current value
+    let (reply_sender, reply_receiver) = channel::new(1);
+    await counter.send(CounterMessage::GetValue(reply_sender));
+    let value = await reply_receiver.receive();
+    
+    assert_eq(value, Some(1));
+    
+    println("✓ Channels and actors tests passed");
+}
+
+fn test_error_handling() {
+    // Result type error handling
+    fn divide(a: f64, b: f64) -> Result[f64, String] {
+        if b == 0.0 {
+            return Err("Division by zero".to_string());
+        }
+        return Ok(a / b);
+    }
+    
+    // Test successful case
+    let result = divide(10.0, 2.0);
+    assert_eq(result, Ok(5.0));
+    
+    // Test error case
+    let error_result = divide(10.0, 0.0);
+    assert_eq(error_result, Err("Division by zero".to_string()));
+    
+    // Error propagation with ?
+    fn calculate_average(numbers: array[f64]) -> Result[f64, String] {
+        if numbers.is_empty() {
+            return Err("Cannot calculate average of empty array".to_string());
+        }
+        
+        let sum = numbers.iter().fold(0.0, |acc, &x| acc + x);
+        let count = numbers.len() as f64;
+        return divide(sum, count); // Using ? operator implicitly
+    }
+    
+    let avg_result = calculate_average([1.0, 2.0, 3.0, 4.0, 5.0]);
+    assert_eq(avg_result, Ok(3.0));
+    
+    let empty_avg = calculate_average([]);
+    assert!(empty_avg.is_err());
+    
+    println("✓ Error handling tests passed");
+}
+
+fn test_memory_management() {
+    // RAII and automatic cleanup
+    class ManagedResource {
+        private id: i32;
+        
+        fn new(id: i32) -> ManagedResource {
+            println("Resource {} acquired", id);
+            return ManagedResource { id };
+        }
+        
+        fn use_resource(self) {
+            println("Using resource {}", self.id);
+        }
+        
+        fn drop() {
+            println("Resource {} released", self.id);
+        }
+    }
+    
+    // Test scope-based cleanup
+    {
+        let resource1 = ManagedResource::new(1);
+        let resource2 = ManagedResource::new(2);
+        
+        resource1.use_resource();
+        resource2.use_resource();
+        
+        // Resources automatically cleaned up at end of scope
+    }
+    
+    // Smart pointer usage
+    let shared_data = Rc::new("shared string");
+    let clone1 = shared_data.clone();
+    let clone2 = shared_data.clone();
+    
+    assert_eq(*shared_data, "shared string");
+    assert_eq(*clone1, "shared string");
+    assert_eq(*clone2, "shared string");
+    
+    // Weak references
+    let weak_ref = Rc::downgrade(&shared_data);
+    assert!(weak_ref.upgrade().is_some());
+    
+    drop(shared_data);
+    drop(clone1);
+    drop(clone2);
+    
+    assert!(weak_ref.upgrade().is_none());
+    
+    println("✓ Memory management tests passed");
+}
+
+fn test_functional_programming() {
+    let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    
+    // Map operation
+    let squares = numbers.iter().map(|&x| x * x).collect();
+    assert_eq(squares, [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]);
+    
+    // Filter operation
+    let evens = numbers.iter().filter(|&&x| x % 2 == 0).collect();
+    assert_eq(evens, [2, 4, 6, 8, 10]);
+    
+    // Fold operation
+    let sum = numbers.iter().fold(0, |acc, &x| acc + x);
+    assert_eq(sum, 55);
+    
+    // Chaining operations
+    let result = numbers
+        .iter()
+        .filter(|&&x| x % 2 == 0)  // Get even numbers
+        .map(|&x| x * x)           // Square them
+        .fold(0, |acc, x| acc + x); // Sum them
+    
+    assert_eq(result, 220); // 4 + 16 + 36 + 64 + 100
+    
+    // Higher-order functions
+    fn apply_twice[T](func: fn(T) -> T, value: T) -> T {
+        return func(func(value));
+    }
+    
+    fn double(x: i32) -> i32 {
+        return x * 2;
+    }
+    
+    let result = apply_twice(double, 5);
+    assert_eq(result, 20); // double(double(5)) = double(10) = 20
+    
+    println("✓ Functional programming tests passed");
+}
+
+fn test_performance_features() {
+    // Test JIT compilation hints
+    @jit_threshold(10)
+    fn hot_function(n: i32) -> i32 {
+        let mut result = 0;
+        for i in 0..n {
+            result += i * i;
+        }
+        return result;
+    }
+    
+    // Call function multiple times to trigger JIT
+    for _ in 0..15 {
+        let result = hot_function(100);
+        assert_eq(result, 328350); // Sum of squares from 0 to 99
+    }
+    
+    // Test vectorized operations
+    fn vectorized_add(a: array[f64], b: array[f64]) -> array[f64] {
+        assert_eq(a.len(), b.len());
+        let mut result = array::with_capacity(a.len());
+        
+        // This would be optimized to use SIMD instructions
+        for i in 0..a.len() {
+            result.push(a[i] + b[i]);
+        }
+        
+        return result;
+    }
+    
+    let a = [1.0, 2.0, 3.0, 4.0];
+    let b = [5.0, 6.0, 7.0, 8.0];
+    let result = vectorized_add(a, b);
+    
+    assert_eq(result, [6.0, 8.0, 10.0, 12.0]);
+    
+    // Test atomic operations
+    let counter = Atomic::new(0i32);
+    
+    // Simulate concurrent access
+    let handles = [];
+    for _ in 0..10 {
+        let counter_clone = counter.clone();
+        handles.push(spawn(move || {
+            for _ in 0..100 {
+                counter_clone.fetch_add(1, MemoryOrdering::SeqCst);
+            }
+        }));
+    }
+    
+    // Wait for all threads
+    for handle in handles {
+        handle.join().unwrap();
+    }
+    
+    assert_eq(counter.load(MemoryOrdering::SeqCst), 1000);
+    
+    println("✓ Performance features tests passed");
+}
+
+// Main test runner
+fn main() {
+    println("🚀 Running Veyra Comprehensive Test Suite");
+    println("==========================================");
+    
+    // Basic language features
+    test_basic_arithmetic();
+    test_variables_and_types();
+    test_control_flow();
+    test_functions();
+    test_arrays_and_collections();
+    
+    // Object-oriented programming
+    test_classes_and_inheritance();
+    test_traits_and_generics();
+    
+    // Advanced features
+    test_pattern_matching();
+    
+    // Asynchronous programming (need async main)
+    runtime::block_on(async {
+        await test_async_programming();
+        await test_channels_and_actors();
+    });
+    
+    // Error handling and memory management
+    test_error_handling();
+    test_memory_management();
+    
+    // Functional programming
+    test_functional_programming();
+    
+    // Performance features
+    test_performance_features();
+    
+    println("==========================================");
+    println("✅ All tests passed! Veyra implementation is working correctly.");
+    println("🎉 Total test categories: 12");
+    println("🔥 Language features validated:");
+    println("   • Basic syntax and operations");
+    println("   • Object-oriented programming");
+    println("   • Generic types and traits");
+    println("   • Pattern matching");
+    println("   • Async/await programming");
+    println("   • Actor model concurrency");
+    println("   • Error handling");
+    println("   • Memory management");
+    println("   • Functional programming");
+    println("   • Performance optimizations");
+}

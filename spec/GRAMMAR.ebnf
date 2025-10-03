@@ -1,0 +1,231 @@
+# Veyra Grammar (EBNF)
+
+This document defines the formal grammar for the Veyra programming language using Extended Backus-Naur Form (EBNF).
+
+## Notation
+- `|` denotes alternation
+- `*` denotes zero or more repetitions
+- `+` denotes one or more repetitions
+- `?` denotes zero or one occurrence (optional)
+- `()` groups elements
+- `[]` denotes optional elements (equivalent to `?`)
+- `{}` denotes zero or more repetitions (equivalent to `*`)
+
+## Lexical Elements
+
+### Identifiers
+```ebnf
+identifier = letter { letter | digit | "_" } .
+letter     = "a" ... "z" | "A" ... "Z" | "_" .
+digit      = "0" ... "9" .
+```
+
+### Keywords
+```ebnf
+keyword = "and" | "async" | "await" | "actor" | "break" | "continue" 
+        | "else" | "false" | "fn" | "for" | "if" | "impl" | "import" 
+        | "in" | "let" | "loop" | "match" | "mut" | "None" | "or" 
+        | "return" | "Some" | "spawn" | "struct" | "true" | "unsafe" 
+        | "while" .
+```
+
+### Literals
+```ebnf
+literal = integer_literal | float_literal | string_literal | boolean_literal .
+
+integer_literal = decimal_literal | binary_literal | octal_literal | hex_literal .
+decimal_literal = digit { digit | "_" } .
+binary_literal  = "0b" binary_digit { binary_digit | "_" } .
+octal_literal   = "0o" octal_digit { octal_digit | "_" } .
+hex_literal     = "0x" hex_digit { hex_digit | "_" } .
+
+binary_digit = "0" | "1" .
+octal_digit  = "0" ... "7" .
+hex_digit    = "0" ... "9" | "a" ... "f" | "A" ... "F" .
+
+float_literal = decimal_literal "." decimal_literal [ exponent ] [ float_suffix ] 
+              | decimal_literal exponent [ float_suffix ] .
+exponent      = ( "e" | "E" ) [ "+" | "-" ] decimal_literal .
+float_suffix  = "f32" | "f64" .
+
+string_literal = '"' { string_char } '"' 
+               | 'r"' { raw_string_char } '"' .
+string_char    = unicode_char | escape_sequence .
+escape_sequence = "\" ( "n" | "r" | "t" | "\" | '"' | "0" | "x" hex_digit hex_digit ) .
+
+boolean_literal = "true" | "false" .
+```
+
+### Operators and Punctuation
+```ebnf
+operator = "+" | "-" | "*" | "/" | "%" | "**"
+         | "==" | "!=" | "<" | "<=" | ">" | ">="
+         | "and" | "or" | "not"
+         | "=" | "+=" | "-=" | "*=" | "/=" | "%="
+         | "?" | "?." | ".." | "..=" | "<-" .
+
+punctuation = "(" | ")" | "[" | "]" | "{" | "}"
+            | "," | ";" | ":" | "." | "->" .
+```
+
+## Syntax Grammar
+
+### Program Structure
+```ebnf
+program = { item } .
+item    = function_item | struct_item | impl_item | import_item .
+```
+
+### Types
+```ebnf
+type = primitive_type | array_type | optional_type | reference_type 
+     | function_type | identifier .
+
+primitive_type = "int" | "i32" | "i64" | "u32" | "u64" 
+               | "f32" | "f64" | "bool" | "char" | "string" .
+
+array_type = "[" type [ ";" expression ] "]" .
+optional_type = type "?" .
+reference_type = "&" [ "mut" ] type .
+function_type = "fn" "(" [ type { "," type } ] ")" [ "->" type ] .
+```
+
+### Expressions
+```ebnf
+expression = assignment_expression .
+
+assignment_expression = logical_or_expression [ assignment_operator assignment_expression ] .
+assignment_operator   = "=" | "+=" | "-=" | "*=" | "/=" | "%=" .
+
+logical_or_expression  = logical_and_expression { "or" logical_and_expression } .
+logical_and_expression = equality_expression { "and" equality_expression } .
+
+equality_expression = relational_expression { ( "==" | "!=" ) relational_expression } .
+relational_expression = additive_expression { ( "<" | "<=" | ">" | ">=" ) additive_expression } .
+
+additive_expression = multiplicative_expression { ( "+" | "-" ) multiplicative_expression } .
+multiplicative_expression = power_expression { ( "*" | "/" | "%" ) power_expression } .
+power_expression = unary_expression [ "**" power_expression ] .
+
+unary_expression = [ unary_operator ] postfix_expression .
+unary_operator   = "+" | "-" | "not" | "&" | "&mut" .
+
+postfix_expression = primary_expression { postfix_suffix } .
+postfix_suffix     = function_call | index_access | field_access | method_call .
+
+function_call = "(" [ expression { "," expression } ] ")" .
+index_access  = "[" expression "]" .
+field_access  = "." identifier .
+method_call   = "." identifier "(" [ expression { "," expression } ] ")" .
+
+primary_expression = literal | identifier | "self" | parenthesized_expression 
+                   | array_expression | struct_expression | if_expression 
+                   | match_expression | range_expression .
+
+parenthesized_expression = "(" expression ")" .
+array_expression = "[" [ expression { "," expression } ] "]" .
+struct_expression = identifier "{" [ field_init { "," field_init } ] "}" .
+field_init = identifier [ ":" expression ] .
+
+if_expression = "if" expression "then" expression "else" expression .
+
+match_expression = "match" expression "{" { match_arm } "}" .
+match_arm = pattern "->" expression .
+pattern = identifier | literal | "_" .
+
+range_expression = expression ".." [ "=" ] expression .
+```
+
+### Statements
+```ebnf
+statement = expression_statement | variable_declaration | assignment_statement
+          | if_statement | while_statement | for_statement | match_statement
+          | return_statement | break_statement | continue_statement
+          | block_statement .
+
+expression_statement = expression .
+variable_declaration = "let" [ "mut" ] identifier [ ":" type ] "=" expression .
+assignment_statement = expression assignment_operator expression .
+
+if_statement = "if" expression block_statement { "elif" expression block_statement } [ "else" block_statement ] .
+while_statement = "while" expression block_statement .
+for_statement = "for" identifier "in" expression block_statement .
+
+match_statement = "match" expression "{" { match_arm_stmt } "}" .
+match_arm_stmt = pattern "->" statement .
+
+return_statement = "return" [ expression ] .
+break_statement = "break" .
+continue_statement = "continue" .
+
+block_statement = "{" { statement } "}" | indented_block .
+indented_block = NEWLINE INDENT { statement } DEDENT .
+```
+
+### Function Definitions
+```ebnf
+function_item = [ "async" ] "fn" identifier "(" [ parameter_list ] ")" [ "->" type ] block_statement .
+parameter_list = parameter { "," parameter } .
+parameter = identifier ":" type [ "=" expression ] .
+```
+
+### Struct Definitions
+```ebnf
+struct_item = "struct" identifier "{" [ field_list ] "}" .
+field_list = field { "," field } .
+field = identifier ":" type .
+```
+
+### Implementation Blocks
+```ebnf
+impl_item = "impl" identifier "{" { impl_method } "}" .
+impl_method = function_item .
+```
+
+### Actor Definitions
+```ebnf
+actor_item = "actor" identifier "{" { actor_member } "}" .
+actor_member = field | impl_method .
+```
+
+### Import Statements
+```ebnf
+import_item = "import" import_path [ "as" identifier ] .
+import_path = identifier { "." identifier } [ "." "{" import_list "}" ] .
+import_list = identifier { "," identifier } .
+```
+
+### Comments
+```ebnf
+line_comment = "#" { unicode_char } .
+block_comment = "#[[" { unicode_char } "]]#" .
+```
+
+## Precedence and Associativity
+
+From highest to lowest precedence:
+
+1. Postfix operators (function call, indexing, field access) - Left associative
+2. Unary operators (`+`, `-`, `not`, `&`, `&mut`) - Right associative  
+3. Power (`**`) - Right associative
+4. Multiplicative (`*`, `/`, `%`) - Left associative
+5. Additive (`+`, `-`) - Left associative
+6. Relational (`<`, `<=`, `>`, `>=`) - Left associative
+7. Equality (`==`, `!=`) - Left associative
+8. Logical AND (`and`) - Left associative
+9. Logical OR (`or`) - Left associative
+10. Assignment operators (`=`, `+=`, etc.) - Right associative
+
+## Whitespace and Indentation
+
+Veyra uses Python-style indentation for block structure as an alternative to braces:
+
+- Increase in indentation starts a new block
+- Decrease in indentation ends the current block
+- All statements at the same indentation level belong to the same block
+- Mixed tabs and spaces are not allowed
+- Recommended: 4 spaces per indentation level
+
+---
+
+*This grammar definition will be refined and expanded as the language specification evolves.*

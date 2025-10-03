@@ -1,0 +1,46 @@
+# Simple Data Analysis with Veyra
+print("=== Simple Data Analysis ===")
+
+# Sales data
+let sales = [150, 200, 175, 300, 250]
+let products = ["Laptop", "Mouse", "Keyboard", "Monitor", "Speaker"]
+
+print("Analyzing " + str(len(sales)) + " products:")
+
+# Calculate total
+let mut total = 0
+let mut i = 0
+while i < len(sales) {
+    total = total + sales[i]
+    i = i + 1
+}
+
+print("Total sales: $" + str(total))
+
+# Find best and worst
+let mut best_sales = sales[0]
+let mut worst_sales = sales[0]
+let mut best_product = products[0]
+let mut worst_product = products[0]
+
+i = 0
+while i < len(sales) {
+    if sales[i] > best_sales {
+        best_sales = sales[i]
+        best_product = products[i]
+    }
+    if sales[i] < worst_sales {
+        worst_sales = sales[i]
+        worst_product = products[i]
+    }
+    i = i + 1
+}
+
+print("Best: " + best_product + " ($" + str(best_sales) + ")")
+print("Worst: " + worst_product + " ($" + str(worst_sales) + ")")
+
+# Average
+let average = total / len(sales)
+print("Average: $" + str(average))
+
+print("=== Analysis Complete ===")

@@ -1,0 +1,1674 @@
+# Veyra Standard Library - Math Module# Veyra Standard Library - Math Module# Veyra Standard Library - Math Module# Veyra Standard Library - Math Module
+
+# Comprehensive mathematical functions and constants
+
+# Comprehensive mathematical functions and constants
+
+# ===== CONSTANTS =====
+
+# Comprehensive mathematical functions and constants# Comprehensive mathematical functions and constants
+
+# Mathematical constants
+
+PI = 3.141592653589793# ===== CONSTANTS =====
+
+E = 2.718281828459045
+
+PHI = 1.618033988749895  # Golden ratio
+
+TAU = 6.283185307179586  # 2 * PI
+
+# Mathematical constants
+
+# ===== BASIC ARITHMETIC =====
+
+PI = 3.141592653589793# ===== MATHEMATICAL CONSTANTS =====# Mathematical constants
+
+# Absolute value
+
+fn abs(x) {E = 2.718281828459045
+
+    if x < 0 {
+
+        return -xPHI = 1.618033988749895  # Golden ratio# PI - The mathematical constant π (pi), approximately 3.14159
+
+    }
+
+    return xTAU = 6.283185307179586  # 2 * PI
+
+}
+
+# Pi - The mathematical constant πlet PI = 3.141592653589793
+
+# Sign function
+
+fn sign(x) {# ===== BASIC ARITHMETIC =====
+
+    if x > 0 {
+
+        return 1let PI = 3.141592653589793238462643383279502884197# E - The mathematical constant e (Euler's number), approximately 2.71828
+
+    } else if x < 0 {
+
+        return -1# Absolute value
+
+    }
+
+    return 0fn abs(x) {let E = 2.718281828459045
+
+}
+
+    if x < 0 {
+
+# Minimum of two values
+
+fn min(a, b) {        return -x# Euler's number - The mathematical constant e# TAU - The mathematical constant τ (tau), equal to 2π
+
+    if a < b {
+
+        return a    }
+
+    }
+
+    return b    return xlet E = 2.718281828459045235360287471352662497757let TAU = 6.283185307179586
+
+}
+
+}
+
+# Maximum of two values
+
+fn max(a, b) {# PHI - The golden ratio, approximately 1.61803
+
+    if a > b {
+
+        return a# Sign function
+
+    }
+
+    return bfn sign(x) {# Tau - Equal to 2πlet PHI = 1.618033988749895
+
+}
+
+    if x > 0 {
+
+# Clamp value between min and max
+
+fn clamp(value, min_val, max_val) {        return 1let TAU = 6.283185307179586476925286766559005768394# SQRT_2 - Square root of 2, approximately 1.41421
+
+    if value < min_val {
+
+        return min_val    } else if x < 0 {
+
+    } else if value > max_val {
+
+        return max_val        return -1let SQRT_2 = 1.4142135623730951
+
+    }
+
+    return value    }
+
+}
+
+    return 0# Golden ratio - The mathematical constant φ# SQRT_3 - Square root of 3, approximately 1.73205
+
+# ===== POWER AND ROOT FUNCTIONS =====
+
+}
+
+# Power function (exponentiation)
+
+fn pow(base, exponent) {let PHI = 1.618033988749894848204586834365638117720let SQRT_3 = 1.7320508075688772
+
+    if exponent == 0 {
+
+        return 1# Minimum of two values
+
+    }
+
+    if base == 0 {fn min(a, b) {# LN_2 - Natural logarithm of 2, approximately 0.69315
+
+        return 0
+
+    }    if a < b {
+
+
+
+    let result = 1        return a# Square root of 2let LN_2 = 0.6931471805599453
+
+    let abs_exponent = abs(exponent)
+
+    }
+
+    let i = 0
+
+    while i < abs_exponent {    return blet SQRT_2 = 1.414213562373095048801688724209698078569# LN_10 - Natural logarithm of 10, approximately 2.30259
+
+        result = result * base
+
+        i = i + 1}
+
+    }
+
+let LN_10 = 2.302585092994046
+
+    if exponent < 0 {
+
+        return 1 / result# Maximum of two values
+
+    }
+
+    return resultfn max(a, b) {# Square root of 3# LOG2_E - Logarithm base 2 of e, approximately 1.44270
+
+}
+
+    if a > b {
+
+# Square root using Newton's method
+
+fn sqrt(x) {        return alet SQRT_3 = 1.732050807568877293527446341505872366942let LOG2_E = 1.4426950408889634
+
+    if x < 0 {
+
+        return 0  # Error case, should handle properly    }
+
+    }
+
+    if x == 0 or x == 1 {    return b# LOG10_E - Logarithm base 10 of e, approximately 0.43429
+
+        return x
+
+    }}
+
+
+
+    let guess = x / 2# Natural logarithm of 2let LOG10_E = 0.4342944819032518
+
+    let prev_guess = 0
+
+# Clamp value between min and max
+
+    while abs(guess - prev_guess) > 0.000001 {
+
+        prev_guess = guessfn clamp(value, min_val, max_val) {let LN_2 = 0.693147180559945309417232121458176568075
+
+        guess = (guess + x / guess) / 2
+
+    }    if value < min_val {
+
+
+
+    return guess        return min_val# Basic math functions
+
+}
+
+    } else if value > max_val {
+
+# Cube root using Newton's method
+
+fn cbrt(x) {        return max_val# Natural logarithm of 10# abs(x) - Returns the absolute value of a number
+
+    if x == 0 {
+
+        return 0    }
+
+    }
+
+    return valuelet LN_10 = 2.302585092994045684017991454684364207601fn abs(x) {
+
+    let guess = x / 3
+
+    let prev_guess = 0}
+
+
+
+    while abs(guess - prev_guess) > 0.000001 {    if x < 0 {
+
+        prev_guess = guess
+
+        let guess_squared = guess * guess# ===== POWER AND ROOT FUNCTIONS =====
+
+        guess = (2 * guess + x / guess_squared) / 3
+
+    }# ===== BASIC ARITHMETIC =====        return -x
+
+
+
+    return guess# Power function (exponentiation)
+
+}
+
+fn pow(base, exponent) {    } else {
+
+# ===== EXPONENTIAL AND LOGARITHMIC FUNCTIONS =====
+
+    if exponent == 0 {
+
+# Exponential function using Taylor series
+
+fn exp(x) {        return 1# Absolute value        return x
+
+    let result = 1
+
+    let term = 1    }
+
+    let n = 1
+
+    if base == 0 {fn abs(x) {    }
+
+    while n < 20 {  # Use enough terms for good precision
+
+        term = term * x / n        return 0
+
+        result = result + term
+
+        n = n + 1    }    if x < 0 {}
+
+    }
+
+
+
+    return result
+
+}    let result = 1        return -x
+
+
+
+# Natural logarithm using Taylor series for values near 1    let abs_exponent = abs(exponent)
+
+fn ln(x) {
+
+    if x <= 0 {    }# sign(x) - Returns the sign of a number (-1, 0, or 1)
+
+        return 0  # Error case
+
+    }    let i = 0
+
+    if x == 1 {
+
+        return 0    while i < abs_exponent {    return xfn sign(x) {
+
+    }
+
+        result = result * base
+
+    # Reduce x to be close to 1 for better convergence
+
+    let y = x        i = i + 1}    if x > 0 {
+
+    let exponent = 0
+
+    }
+
+    while y >= 2 {
+
+        y = y / E        return 1
+
+        exponent = exponent + 1
+
+    }    if exponent < 0 {
+
+
+
+    while y < 0.5 {        return 1 / result# Sign function    } elif x < 0 {
+
+        y = y * E
+
+        exponent = exponent - 1    }
+
+    }
+
+    return resultfn sign(x) {        return -1
+
+    # Taylor series: ln(1+z) = z - z^2/2 + z^3/3 - z^4/4 + ...
+
+    let z = y - 1}
+
+    let result = 0
+
+    let term = z    if x > 0 {    } else {
+
+    let n = 1
+
+# Square root using Newton's method
+
+    while n < 20 {
+
+        if n % 2 == 1 {fn sqrt(x) {        return 1        return 0
+
+            result = result + term / n
+
+        } else {    if x < 0 {
+
+            result = result - term / n
+
+        }        return 0  # Error case, should handle properly    }    }
+
+        term = term * z
+
+        n = n + 1    }
+
+    }
+
+    if x == 0 or x == 1 {    if x < 0 {}
+
+    return result + exponent
+
+}        return x
+
+
+
+# Logarithm base 10    }        return -1
+
+fn log10(x) {
+
+    return ln(x) / ln(10)
+
+}
+
+    let guess = x / 2    }# max(a, b) - Returns the maximum of two numbers
+
+# Logarithm base 2
+
+fn log2(x) {    let prev_guess = 0
+
+    return ln(x) / ln(2)
+
+}    return 0fn max(a, b) {
+
+
+
+# ===== TRIGONOMETRIC FUNCTIONS =====    while abs(guess - prev_guess) > 0.000001 {
+
+
+
+# Sine using Taylor series        prev_guess = guess}    if a > b {
+
+fn sin(x) {
+
+    # Reduce to [-pi, pi] range        guess = (guess + x / guess) / 2
+
+    let x_mod = x % (2 * PI)
+
+    let x_reduced = if x_mod > PI {    }        return a
+
+        x_mod - 2 * PI
+
+    } else if x_mod < -PI {
+
+        x_mod + 2 * PI
+
+    } else {    return guess# ===== POWER AND ROOT FUNCTIONS =====    } else {
+
+        x_mod
+
+    }}
+
+
+
+    let result = x_reduced        return b
+
+    let term = x_reduced
+
+    let n = 1# Cube root using Newton's method
+
+
+
+    while n < 10 {fn cbrt(x) {# Power function (exponentiation)    }
+
+        term = -term * x_reduced * x_reduced / ((2 * n) * (2 * n + 1))
+
+        result = result + term    if x == 0 {
+
+        n = n + 1
+
+    }        return 0fn pow(base, exp) {}
+
+
+
+    return result    }
+
+}
+
+    if exp == 0 {
+
+# Cosine using Taylor series
+
+fn cos(x) {    let guess = x / 3
+
+    # Reduce to [-pi, pi] range
+
+    let x_mod = x % (2 * PI)    let prev_guess = 0        return 1# min(a, b) - Returns the minimum of two numbers
+
+    let x_reduced = if x_mod > PI {
+
+        x_mod - 2 * PI
+
+    } else if x_mod < -PI {
+
+        x_mod + 2 * PI    while abs(guess - prev_guess) > 0.000001 {    }fn min(a, b) {
+
+    } else {
+
+        x_mod        prev_guess = guess
+
+    }
+
+        let guess_squared = guess * guess    if a < b {
+
+    let result = 1
+
+    let term = 1        guess = (2 * guess + x / guess_squared) / 3
+
+    let n = 1
+
+    }    let result = 1        return a
+
+    while n < 10 {
+
+        term = -term * x_reduced * x_reduced / ((2 * n - 1) * (2 * n))
+
+        result = result + term
+
+        n = n + 1    return guess    let abs_exp = abs(exp)    } else {
+
+    }
+
+}
+
+    return result
+
+}    let i = 0        return b
+
+
+
+# Tangent# ===== EXPONENTIAL AND LOGARITHMIC FUNCTIONS =====
+
+fn tan(x) {
+
+    return sin(x) / cos(x)    }
+
+}
+
+# Exponential function using Taylor series
+
+# Arcsine
+
+fn asin(x) {fn exp(x) {    while i < abs_exp {}
+
+    if x < -1 or x > 1 {
+
+        return 0  # Error case    let result = 1
+
+    }
+
+    if x == 1 {    let term = 1        result = result * base
+
+        return PI / 2
+
+    }    let n = 1
+
+    if x == -1 {
+
+        return -PI / 2        i = i + 1# clamp(value, min_val, max_val) - Clamps a value between min and max
+
+    }
+
+    while n < 20 {  # Use enough terms for good precision
+
+    # Use approximation: asin(x) ≈ x + (1/6)x^3 + (3/40)x^5 + ...
+
+    let x2 = x * x        term = term * x / n    }fn clamp(value, min_val, max_val) {
+
+    let x3 = x2 * x
+
+    let x5 = x3 * x2        result = result + term
+
+
+
+    return x + (1.0/6.0) * x3 + (3.0/40.0) * x5        n = n + 1    return max(min_val, min(max_val, value))
+
+}
+
+    }
+
+# Arccosine
+
+fn acos(x) {    if exp < 0 {}
+
+    return PI / 2 - asin(x)
+
+}    return result
+
+
+
+# Arctangent}        return 1.0 / result
+
+fn atan(x) {
+
+    if x == 0 {
+
+        return 0
+
+    }# Natural logarithm using Taylor series for values near 1    }# Power and root functions
+
+
+
+    # Use approximation for |x| <= 1fn ln(x) {
+
+    if abs(x) <= 1 {
+
+        let x2 = x * x    if x <= 0 {    return resultfn pow(base, exp) {
+
+        let x3 = x2 * x
+
+        let x5 = x3 * x2        return 0  # Error case
+
+        let x7 = x5 * x2
+
+    }}    if exp == 0 {
+
+        return x - (1.0/3.0) * x3 + (1.0/5.0) * x5 - (1.0/7.0) * x7
+
+    } else {    if x == 1 {
+
+        # For |x| > 1, use atan(x) = sign(x) * pi/2 - 1/x + 1/(3x^3) - ...
+
+        let sign_x = sign(x)        return 0        return 1
+
+        let abs_x = abs(x)
+
+        let inv_x = 1 / abs_x    }
+
+        let inv_x3 = inv_x * inv_x * inv_x
+
+# Square root using Newton's method    }
+
+        return sign_x * (PI / 2) - sign_x * (inv_x - (1.0/3.0) * inv_x3)
+
+    }    # Reduce x to be close to 1 for better convergence
+
+}
+
+    let y = xfn sqrt(x) {
+
+# ===== HYPERBOLIC FUNCTIONS =====
+
+    let exponent = 0
+
+# Hyperbolic sine
+
+fn sinh(x) {    if x < 0 {    let result = 1
+
+    return (exp(x) - exp(-x)) / 2
+
+}    while y >= 2 {
+
+
+
+# Hyperbolic cosine        y = y / E        return 0.0  # Error: negative square root    let abs_exp = abs(exp)
+
+fn cosh(x) {
+
+    return (exp(x) + exp(-x)) / 2        exponent = exponent + 1
+
+}
+
+    }    }    let i = 0
+
+# Hyperbolic tangent
+
+fn tanh(x) {
+
+    let e2x = exp(2 * x)
+
+    return (e2x - 1) / (e2x + 1)    while y < 0.5 {    if x == 0 or x == 1 {
+
+}
+
+        y = y * E
+
+# ===== FACTORIAL AND COMBINATORICS =====
+
+        exponent = exponent - 1        return x    while i < abs_exp {
+
+# Factorial
+
+fn factorial(n) {    }
+
+    if n < 0 {
+
+        return 0  # Error case    }        result = result * base
+
+    }
+
+    if n == 0 or n == 1 {    # Taylor series: ln(1+z) = z - z^2/2 + z^3/3 - z^4/4 + ...
+
+        return 1
+
+    }    let z = y - 1        i = i + 1
+
+
+
+    let result = 1    let result = 0
+
+    let i = 2
+
+    while i <= n {    let term = z    let guess = x / 2.0    }
+
+        result = result * i
+
+        i = i + 1    let n = 1
+
+    }
+
+    let i = 0
+
+    return result
+
+}    while n < 20 {
+
+
+
+# Binomial coefficient C(n, k)        if n % 2 == 1 {    if exp < 0 {
+
+fn binomial(n, k) {
+
+    if k < 0 or k > n {            result = result + term / n
+
+        return 0
+
+    }        } else {    while i < 20 {  # 20 iterations for good precision        return 1.0 / result
+
+    if k == 0 or k == n {
+
+        return 1            result = result - term / n
+
+    }
+
+        }        guess = (guess + x / guess) / 2.0    } else {
+
+    # Use multiplicative formula to avoid large intermediate results
+
+    let result = 1        term = term * z
+
+    let i = 1
+
+    while i <= k {        n = n + 1        i = i + 1        return result
+
+        result = result * (n - k + i) / i
+
+        i = i + 1    }
+
+    }
+
+    }    }
+
+    return result
+
+}    return result + exponent
+
+
+
+# Permutation P(n, k)}}
+
+fn permutation(n, k) {
+
+    if k < 0 or k > n {
+
+        return 0
+
+    }# Logarithm base 10    return guess
+
+    if k == 0 {
+
+        return 1fn log10(x) {
+
+    }
+
+    return ln(x) / ln(10)}fn sqrt(x) {
+
+    let result = 1
+
+    let i = 0}
+
+    while i < k {
+
+        result = result * (n - i)    if x < 0 {
+
+        i = i + 1
+
+    }# Logarithm base 2
+
+
+
+    return resultfn log2(x) {# Cube root        return 0.0
+
+}
+
+    return ln(x) / ln(2)
+
+# ===== ROUNDING FUNCTIONS =====
+
+}fn cbrt(x) {    }
+
+# Floor function
+
+fn floor(x) {
+
+    let int_part = x as int
+
+    if x < 0 and x != int_part {# ===== TRIGONOMETRIC FUNCTIONS =====    if x == 0 {    if x == 0 {
+
+        return int_part - 1
+
+    }
+
+    return int_part
+
+}# Sine using Taylor series        return 0        return 0.0
+
+
+
+# Ceiling functionfn sin(x) {
+
+fn ceil(x) {
+
+    let int_part = x as int    # Reduce to [-pi, pi] range    }    }
+
+    if x > 0 and x != int_part {
+
+        return int_part + 1    let x_mod = x % (2 * PI)
+
+    }
+
+    return int_part    let x_reduced = if x_mod > PI {
+
+}
+
+        x_mod - 2 * PI
+
+# Round to nearest integer
+
+fn round(x) {    } else if x_mod < -PI {    let guess = x / 3.0    let guess = x / 2.0
+
+    let int_part = x as int
+
+    let frac_part = x - int_part        x_mod + 2 * PI
+
+
+
+    if frac_part >= 0.5 {    } else {    let i = 0    let i = 0
+
+        return int_part + 1
+
+    } else if frac_part <= -0.5 {        x_mod
+
+        return int_part - 1
+
+    }    }
+
+    return int_part
+
+}
+
+
+
+# ===== STATISTICAL FUNCTIONS =====    let result = x_reduced    while i < 20 {    while i < 20 {
+
+
+
+# Mean (average)    let term = x_reduced
+
+fn mean(values) {
+
+    if len(values) == 0 {    let n = 1        guess = (2.0 * guess + x / (guess * guess)) / 3.0        guess = (guess + x / guess) / 2.0
+
+        return 0
+
+    }
+
+
+
+    let sum = 0    while n < 10 {        i = i + 1        i = i + 1
+
+    let i = 0
+
+    while i < len(values) {        term = -term * x_reduced * x_reduced / ((2 * n) * (2 * n + 1))
+
+        sum = sum + values[i]
+
+        i = i + 1        result = result + term    }    }
+
+    }
+
+        n = n + 1
+
+    return sum / len(values)
+
+}    }
+
+
+
+# Variance
+
+fn variance(values) {
+
+    if len(values) <= 1 {    return result    return guess    return guess
+
+        return 0
+
+    }}
+
+
+
+    let avg = mean(values)}}
+
+    let sum_squares = 0
+
+    let i = 0# Cosine using Taylor series
+
+    while i < len(values) {
+
+        let diff = values[i] - avgfn cos(x) {
+
+        sum_squares = sum_squares + diff * diff
+
+        i = i + 1    # Reduce to [-pi, pi] range
+
+    }
+
+    let x_mod = x % (2 * PI)# ===== EXPONENTIAL AND LOGARITHMIC FUNCTIONS =====fn factorial(n) {
+
+    return sum_squares / (len(values) - 1)
+
+}    let x_reduced = if x_mod > PI {
+
+
+
+# Standard deviation        x_mod - 2 * PI    if n <= 1 {
+
+fn std_dev(values) {
+
+    return sqrt(variance(values))    } else if x_mod < -PI {
+
+}
+
+        x_mod + 2 * PI# Exponential function (e^x) - simplified approximation        return 1
+
+# ===== UTILITY FUNCTIONS =====
+
+    } else {
+
+# Check if number is NaN
+
+fn is_nan(x) {        x_modfn exp(x) {    } else {
+
+    return x != x  # NaN is the only value where x != x
+
+}    }
+
+
+
+# Check if number is infinite    let result = 1.0        return n * factorial(n - 1)
+
+fn is_inf(x) {
+
+    return abs(x) == 1 / 0  # Division by zero gives infinity    let result = 1
+
+}
+
+    let term = 1    let term = 1.0    }
+
+# Check if number is finite
+
+fn is_finite(x) {    let n = 1
+
+    return not is_nan(x) and not is_inf(x)
+
+}    let i = 1}
+
+    while n < 10 {
+
+        term = -term * x_reduced * x_reduced / ((2 * n - 1) * (2 * n))
+
+        result = result + term
+
+        n = n + 1    while i < 20 {fn exp(x) {
+
+    }
+
+        term = term * x / i    let result = 1.0
+
+    return result
+
+}        result = result + term    let term = 1.0
+
+
+
+# Tangent        i = i + 1    let i = 1
+
+fn tan(x) {
+
+    return sin(x) / cos(x)    }
+
+}
+
+    while i < 20 {
+
+# Arcsine
+
+fn asin(x) {    return result        term = term * x / i
+
+    if x < -1 or x > 1 {
+
+        return 0  # Error case}        result = result + term
+
+    }
+
+    if x == 1 {        i = i + 1
+
+        return PI / 2
+
+    }# Natural logarithm - simplified approximation for x > 0    }
+
+    if x == -1 {
+
+        return -PI / 2fn ln(x) {
+
+    }
+
+    if x <= 0 {    return result
+
+    # Use approximation: asin(x) ≈ x + (1/6)x^3 + (3/40)x^5 + ...
+
+    let x2 = x * x        return 0.0  # Error: logarithm of non-positive number}
+
+    let x3 = x2 * x
+
+    let x5 = x3 * x2    }
+
+
+
+    return x + (1.0/6.0) * x3 + (3.0/40.0) * x5    if x == 1 {fn ln(x) {
+
+}
+
+        return 0    if x <= 0 {
+
+# Arccosine
+
+fn acos(x) {    }        return 0.0
+
+    return PI / 2 - asin(x)
+
+}    }
+
+
+
+# Arctangent    # Use ln(x) = 2 * artanh((x-1)/(x+1)) approximation
+
+fn atan(x) {
+
+    if x == 0 {    let y = (x - 1) / (x + 1)    let result = 0.0
+
+        return 0
+
+    }    let y2 = y * y    let term = (x - 1) / (x + 1)
+
+
+
+    # Use approximation for |x| <= 1    let result = y    let term_squared = term * term
+
+    if abs(x) <= 1 {
+
+        let x2 = x * x    let term = y    let i = 1
+
+        let x3 = x2 * x
+
+        let x5 = x3 * x2    let i = 3
+
+        let x7 = x5 * x2
+
+    while i < 20 {
+
+        return x - (1.0/3.0) * x3 + (1.0/5.0) * x5 - (1.0/7.0) * x7
+
+    } else {    while i < 20 {        result = result + term / (2 * i - 1)
+
+        # For |x| > 1, use atan(x) = sign(x) * pi/2 - 1/x + 1/(3x^3) - ...
+
+        let sign_x = sign(x)        term = term * y2        term = term * term_squared
+
+        let abs_x = abs(x)
+
+        let inv_x = 1 / abs_x        result = result + term / i        i = i + 1
+
+        let inv_x3 = inv_x * inv_x * inv_x
+
+        i = i + 2    }
+
+        return sign_x * (PI / 2) - sign_x * (inv_x - (1.0/3.0) * inv_x3)
+
+    }    }
+
+}
+
+    return 2 * result
+
+# ===== HYPERBOLIC FUNCTIONS =====
+
+    return 2 * result}
+
+# Hyperbolic sine
+
+fn sinh(x) {}
+
+    return (exp(x) - exp(-x)) / 2
+
+}fn log10(x) {
+
+
+
+# Hyperbolic cosine# Logarithm with custom base    return ln(x) / LN_10
+
+fn cosh(x) {
+
+    return (exp(x) + exp(-x)) / 2fn log(x, base) {}
+
+}
+
+    return ln(x) / ln(base)
+
+# Hyperbolic tangent
+
+fn tanh(x) {}fn log2(x) {
+
+    let e2x = exp(2 * x)
+
+    return (e2x - 1) / (e2x + 1)    return ln(x) / LN_2
+
+}
+
+# Common logarithm (base 10)}
+
+# ===== FACTORIAL AND COMBINATORICS =====
+
+fn log10(x) {
+
+# Factorial
+
+fn factorial(n) {    return log(x, 10)# Trigonometric functions
+
+    if n < 0 {
+
+        return 0  # Error case}fn sin(x) {
+
+    }
+
+    if n == 0 or n == 1 {    let result = 0.0
+
+        return 1
+
+    }# Binary logarithm (base 2)    let term = x
+
+
+
+    let result = 1fn log2(x) {    let i = 1
+
+    let i = 2
+
+    while i <= n {    return log(x, 2)
+
+        result = result * i
+
+        i = i + 1}    while i < 15 {
+
+    }
+
+        result = result + term
+
+    return result
+
+}# ===== TRIGONOMETRIC FUNCTIONS =====        term = -term * x * x / ((2 * i) * (2 * i + 1))
+
+
+
+# Binomial coefficient C(n, k)        i = i + 1
+
+fn binomial(n, k) {
+
+    if k < 0 or k > n {# Sine function - Taylor series approximation    }
+
+        return 0
+
+    }fn sin(x) {
+
+    if k == 0 or k == n {
+
+        return 1    # Normalize to [-π, π]    return result
+
+    }
+
+    let x_norm = x}
+
+    # Use multiplicative formula to avoid large intermediate results
+
+    let result = 1    while x_norm > PI {
+
+    let i = 1
+
+    while i <= k {        x_norm = x_norm - TAUfn cos(x) {
+
+        result = result * (n - k + i) / i
+
+        i = i + 1    }    let result = 1.0
+
+    }
+
+    while x_norm < -PI {    let term = 1.0
+
+    return result
+
+}        x_norm = x_norm + TAU    let i = 1
+
+
+
+# Permutation P(n, k)    }
+
+fn permutation(n, k) {
+
+    if k < 0 or k > n {    while i < 15 {
+
+        return 0
+
+    }    let result = x_norm        term = -term * x * x / ((2 * i - 1) * (2 * i))
+
+    if k == 0 {
+
+        return 1    let term = x_norm        result = result + term
+
+    }
+
+    let i = 1        i = i + 1
+
+    let result = 1
+
+    let i = 0    }
+
+    while i < k {
+
+        result = result * (n - i)    while i < 10 {
+
+        i = i + 1
+
+    }        term = -term * x_norm * x_norm / ((2 * i) * (2 * i + 1))    return result
+
+
+
+    return result        result = result + term}
+
+}
+
+        i = i + 1
+
+# ===== ROUNDING FUNCTIONS =====
+
+    }fn tan(x) {
+
+# Floor function
+
+fn floor(x) {    return sin(x) / cos(x)
+
+    let int_part = x as int
+
+    if x < 0 and x != int_part {    return result}
+
+        return int_part - 1
+
+    }}
+
+    return int_part
+
+}fn asin(x) {
+
+
+
+# Ceiling function# Cosine function    if x < -1 or x > 1 {
+
+fn ceil(x) {
+
+    let int_part = x as intfn cos(x) {        return 0.0
+
+    if x > 0 and x != int_part {
+
+        return int_part + 1    # cos(x) = sin(x + π/2)    }
+
+    }
+
+    return int_part    return sin(x + PI / 2)
+
+}
+
+}    let result = x
+
+# Round to nearest integer
+
+fn round(x) {    let term = x
+
+    let int_part = x as int
+
+    let frac_part = x - int_part# Tangent function    let i = 1
+
+
+
+    if frac_part >= 0.5 {fn tan(x) {
+
+        return int_part + 1
+
+    } else if frac_part <= -0.5 {    let s = sin(x)    while i < 15 {
+
+        return int_part - 1
+
+    }    let c = cos(x)        term = term * x * x * (2 * i - 1) * (2 * i - 1) / ((2 * i) * (2 * i + 1))
+
+    return int_part
+
+}    if c == 0 {        result = result + term / (2 * i + 1)
+
+
+
+# ===== STATISTICAL FUNCTIONS =====        return 0.0  # Error: division by zero        i = i + 1
+
+
+
+# Mean (average)    }    }
+
+fn mean(values) {
+
+    if len(values) == 0 {    return s / c
+
+        return 0
+
+    }}    return result
+
+
+
+    let sum = 0}
+
+    let i = 0
+
+    while i < len(values) {# Arcsine function
+
+        sum = sum + values[i]
+
+        i = i + 1fn asin(x) {fn acos(x) {
+
+    }
+
+    if x < -1 or x > 1 {    return PI / 2 - asin(x)
+
+    return sum / len(values)
+
+}        return 0.0  # Error: domain error}
+
+
+
+# Variance    }
+
+fn variance(values) {
+
+    if len(values) <= 1 {    if x == 1 {fn atan(x) {
+
+        return 0
+
+    }        return PI / 2    let result = 0.0
+
+
+
+    let avg = mean(values)    }    let term = x
+
+    let sum_squares = 0
+
+    let i = 0    if x == -1 {    let i = 1
+
+    while i < len(values) {
+
+        let diff = values[i] - avg        return -PI / 2
+
+        sum_squares = sum_squares + diff * diff
+
+        i = i + 1    }    while i < 15 {
+
+    }
+
+        result = result + term / (2 * i - 1)
+
+    return sum_squares / (len(values) - 1)
+
+}    # Approximation using Taylor series        term = -term * x * x
+
+
+
+# Standard deviation    let result = x        i = i + 1
+
+fn std_dev(values) {
+
+    return sqrt(variance(values))    let term = x    }
+
+}
+
+    let x2 = x * x
+
+# ===== UTILITY FUNCTIONS =====
+
+    let i = 1    return result
+
+# Check if number is NaN
+
+fn is_nan(x) {}
+
+    return x != x  # NaN is the only value where x != x
+
+}    while i < 10 {
+
+
+
+# Check if number is infinite        term = term * x2 * (2 * i - 1) * (2 * i - 1) / ((2 * i) * (2 * i + 1))fn atan2(y, x) {
+
+fn is_inf(x) {
+
+    return abs(x) == 1 / 0  # Division by zero gives infinity        result = result + term    if x > 0 {
+
+}
+
+        i = i + 1        return atan(y / x)
+
+# Check if number is finite
+
+fn is_finite(x) {    }    } elif x < 0 and y >= 0 {
+
+    return not is_nan(x) and not is_inf(x)
+
+}        return atan(y / x) + PI
+
+    return result    } elif x < 0 and y < 0 {
+
+}        return atan(y / x) - PI
+
+    } elif x == 0 and y > 0 {
+
+# Arccosine function        return PI / 2
+
+fn acos(x) {    } elif x == 0 and y < 0 {
+
+    return PI / 2 - asin(x)        return -PI / 2
+
+}    } else {
+
+        return 0.0
+
+# Arctangent function    }
+
+fn atan(x) {}
+
+    if x == 0 {
+
+        return 0# Rounding functions
+
+    }fn floor(x) {
+
+    let int_part = x - (x % 1)
+
+    let result = 0.0    if x < 0 and x % 1 != 0 {
+
+    let term = x        return int_part - 1
+
+    let x2 = x * x    } else {
+
+    let sign = 1        return int_part
+
+    let i = 1    }
+
+}
+
+    while i < 20 {
+
+        result = result + sign * term / ifn ceil(x) {
+
+        term = term * x2    let int_part = x - (x % 1)
+
+        sign = -sign    if x > 0 and x % 1 != 0 {
+
+        i = i + 2        return int_part + 1
+
+    }    } else {
+
+        return int_part
+
+    return result    }
+
+}}
+
+
+
+# ===== HYPERBOLIC FUNCTIONS =====fn round(x) {
+
+    let decimal = x % 1
+
+# Hyperbolic sine    if decimal >= 0.5 {
+
+fn sinh(x) {        return ceil(x)
+
+    return (exp(x) - exp(-x)) / 2    } elif decimal <= -0.5 {
+
+}        return floor(x)
+
+    } else {
+
+# Hyperbolic cosine        return floor(x) + 0.5
+
+fn cosh(x) {    }
+
+    return (exp(x) + exp(-x)) / 2}
+
+}
+
+fn trunc(x) {
+
+# Hyperbolic tangent    if x >= 0 {
+
+fn tanh(x) {        return floor(x)
+
+    let e2x = exp(2 * x)    } else {
+
+    return (e2x - 1) / (e2x + 1)        return ceil(x)
+
+}    }
+
+}
+
+# ===== ROUNDING FUNCTIONS =====
+
+# Hyperbolic functions
+
+# Floor functionfn sinh(x) {
+
+fn floor(x) {    return (exp(x) - exp(-x)) / 2
+
+    let int_part = x - (x % 1)}
+
+    if x < 0 and x % 1 != 0 {
+
+        return int_part - 1fn cosh(x) {
+
+    }    return (exp(x) + exp(-x)) / 2
+
+    return int_part}
+
+}
+
+fn tanh(x) {
+
+# Ceiling function    return sinh(x) / cosh(x)
+
+fn ceil(x) {}
+
+    let int_part = x - (x % 1)
+
+    if x > 0 and x % 1 != 0 {# Special functions
+
+        return int_part + 1fn degrees(radians) {
+
+    }    return radians * 180.0 / PI
+
+    return int_part}
+
+}
+
+fn radians(degrees) {
+
+# Round to nearest integer    return degrees * PI / 180.0
+
+fn round(x) {}
+
+    let int_part = x - (x % 1)
+
+    let frac_part = x % 1fn fmod(x, y) {
+
+    return x - trunc(x / y) * y
+
+    if frac_part >= 0.5 {}
+
+        return int_part + 1
+
+    }fn fdim(x, y) {
+
+    if frac_part <= -0.5 {    if x > y {
+
+        return int_part - 1        return x - y
+
+    }    } else {
+
+    return int_part        return 0.0
+
+}    }
+
+}
+
+# Truncate (remove fractional part)
+
+fn trunc(x) {fn fma(x, y, z) {
+
+    if x >= 0 {    return x * y + z
+
+        return x - (x % 1)}
+
+    } else {
+
+        return -(abs(x) - (abs(x) % 1))fn copysign(x, y) {
+
+    }    if (x >= 0 and y >= 0) or (x < 0 and y < 0) {
+
+}        return abs(x)
+
+    } else {
+
+# ===== COMPARISON AND UTILITY =====        return -abs(x)
+
+    }
+
+# Check if a number is NaN (simplified)}
+
+fn is_nan(x) {
+
+    return x != x  # NaN is the only value not equal to itselffn nextafter(x, y) {
+
+}    if x < y {
+
+        return x + 0.0000000001
+
+# Check if a number is finite    } else {
+
+fn is_finite(x) {        return x - 0.0000000001
+
+    return x > -1000000 and x < 1000000  # Simplified check    }
+
+}}
+
+
+
+# Check if a number is infinite (simplified)fn isfinite(x) {
+
+fn is_infinite(x) {    return x != 1.0/0.0 and x != -1.0/0.0
+
+    return not is_finite(x)}
+
+}
+
+fn isinf(x) {
+
+# ===== GEOMETRIC FUNCTIONS =====    return x == 1.0/0.0 or x == -1.0/0.0
+
+}
+
+# Distance between two points
+
+fn distance(x1, y1, x2, y2) {fn isnan(x) {
+
+    let dx = x2 - x1    return x != x
+
+    let dy = y2 - y1}
+
+    return sqrt(dx * dx + dy * dy)
+}
+
+# Angle from origin to point
+fn angle(x, y) {
+    return atan(y / x)
+}
+
+# ===== STATISTICAL FUNCTIONS =====
+
+# Mean (average)
+fn mean(values) {
+    if len(values) == 0 {
+        return 0
+    }
+
+    let sum = 0
+    let i = 0
+    let length = len(values)
+
+    while i < length {
+        sum = sum + values[i]
+        i = i + 1
+    }
+
+    return sum / length
+}
+
+# Variance
+fn variance(values) {
+    if len(values) <= 1 {
+        return 0
+    }
+
+    let avg = mean(values)
+    let sum_squares = 0
+    let i = 0
+    let length = len(values)
+
+    while i < length {
+        let diff = values[i] - avg
+        sum_squares = sum_squares + diff * diff
+        i = i + 1
+    }
+
+    return sum_squares / (length - 1)
+}
+
+# Standard deviation
+fn std_dev(values) {
+    return sqrt(variance(values))
+}

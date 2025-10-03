@@ -1,0 +1,33 @@
+[package]
+name = "veyra-compiler"
+version = "0.1.0"
+edition = "2021"
+authors = ["Veyra Team"]
+description = "The Veyra programming language compiler"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/veyra-lang/veyra"
+keywords = ["compiler", "language", "programming"]
+categories = ["compilers"]
+
+[lib]
+name = "veyra_compiler"
+path = "src/lib.rs"
+
+[[bin]]
+name = "veyc"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+thiserror = "1.0"
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dev-dependencies]
+pretty_assertions = "1.0"
+
+[profile.release]
+codegen-units = 1
+lto = true
+panic = "abort"

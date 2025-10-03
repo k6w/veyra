@@ -1,0 +1,389 @@
+// Veyra Performance Optimization Examples
+// This file demonstrates various performance optimization techniques
+// that would be supported by the advanced runtime system
+
+// JIT Compilation Example
+fn fibonacci_recursive(n: i64) -> i64 {
+    if n <= 1 {
+        return n;
+    }
+    return fibonacci_recursive(n - 1) + fibonacci_recursive(n - 2);
+}
+
+// This function would be JIT compiled after multiple calls
+fn hot_computation_loop(data: array[i64]) -> i64 {
+    let mut sum = 0;
+    let mut product = 1;
+    
+    // Hot loop that would benefit from JIT optimization
+    for i in 0..data.length() {
+        let value = data[i];
+        
+        // Complex computation that would be optimized
+        if value % 2 == 0 {
+            sum += value * value;
+            product *= value / 2;
+        } else {
+            sum += value * 3;
+            product *= value + 1;
+        }
+        
+        // Branch that could be predicted and optimized
+        if value > 100 {
+            sum = sum * 2;
+        }
+    }
+    
+    return sum + product;
+}
+
+// Memory Pool Example
+class MemoryPool {
+    private pool: array[byte];
+    private free_blocks: array[i64];
+    private block_size: i64;
+    
+    fn new(total_size: i64, block_size: i64) -> MemoryPool {
+        let pool = array::new(total_size);
+        let num_blocks = total_size / block_size;
+        let free_blocks = array::new(num_blocks);
+        
+        // Initialize free block list
+        for i in 0..num_blocks {
+            free_blocks[i] = i * block_size;
+        }
+        
+        return MemoryPool { pool, free_blocks, block_size };
+    }
+    
+    fn allocate() -> Option[i64] {
+        if self.free_blocks.is_empty() {
+            return None;
+        }
+        
+        return Some(self.free_blocks.pop());
+    }
+    
+    fn deallocate(offset: i64) {
+        self.free_blocks.push(offset);
+    }
+}
+
+// Lock-Free Data Structure Example
+class LockFreeQueue[T] {
+    private head: atomic[Node[T]];
+    private tail: atomic[Node[T]];
+    
+    class Node[T] {
+        data: Option[T];
+        next: atomic[Node[T]];
+    }
+    
+    fn new() -> LockFreeQueue[T] {
+        let dummy = Node { data: None, next: atomic::new(null) };
+        return LockFreeQueue {
+            head: atomic::new(dummy),
+            tail: atomic::new(dummy)
+        };
+    }
+    
+    fn enqueue(item: T) {
+        let new_node = Node { data: Some(item), next: atomic::new(null) };
+        
+        loop {
+            let tail = self.tail.load(memory_order::acquire);
+            let next = tail.next.load(memory_order::acquire);
+            
+            if next == null {
+                // Try to link new node to tail
+                if tail.next.compare_exchange(null, new_node, memory_order::release) {
+                    // Success, now move tail pointer
+                    self.tail.compare_exchange(tail, new_node, memory_order::release);
+                    break;
+                }
+            } else {
+                // Help move tail pointer
+                self.tail.compare_exchange(tail, next, memory_order::release);
+            }
+        }
+    }
+    
+    fn dequeue() -> Option[T] {
+        loop {
+            let head = self.head.load(memory_order::acquire);
+            let tail = self.tail.load(memory_order::acquire);
+            let next = head.next.load(memory_order::acquire);
+            
+            if head == tail {
+                if next == null {
+                    return None; // Queue is empty
+                }
+                // Help move tail pointer
+                self.tail.compare_exchange(tail, next, memory_order::release);
+            } else {
+                let data = next.data;
+                if self.head.compare_exchange(head, next, memory_order::release) {
+                    return data;
+                }
+            }
+        }
+    }
+}
+
+// SIMD Operations Example
+fn vectorized_add(a: array[f64], b: array[f64], result: array[f64]) {
+    assert(a.length() == b.length() && b.length() == result.length());
+    
+    let length = a.length();
+    let simd_width = 4; // AVX2 can process 4 doubles at once
+    let vectorized_end = (length / simd_width) * simd_width;
+    
+    // Vectorized loop for bulk processing
+    for i in 0..vectorized_end step simd_width {
+        // This would be optimized to use SIMD instructions
+        let va = simd::load_f64x4(&a[i]);
+        let vb = simd::load_f64x4(&b[i]);
+        let vresult = simd::add_f64x4(va, vb);
+        simd::store_f64x4(&result[i], vresult);
+    }
+    
+    // Handle remaining elements
+    for i in vectorized_end..length {
+        result[i] = a[i] + b[i];
+    }
+}
+
+// Cache-Friendly Data Structure
+class CacheFriendlyMatrix {
+    private data: array[f64];
+    private rows: i64;
+    private cols: i64;
+    private block_size: i64;
+    
+    fn new(rows: i64, cols: i64) -> CacheFriendlyMatrix {
+        return CacheFriendlyMatrix {
+            data: array::new(rows * cols),
+            rows,
+            cols,
+            block_size: 64 // Cache line size
+        };
+    }
+    
+    // Cache-friendly matrix multiplication
+    fn multiply(other: CacheFriendlyMatrix) -> CacheFriendlyMatrix {
+        assert(self.cols == other.rows);
+        
+        let result = CacheFriendlyMatrix::new(self.rows, other.cols);
+        
+        // Blocked matrix multiplication for better cache utilization
+        for ii in 0..self.rows step self.block_size {
+            for jj in 0..other.cols step self.block_size {
+                for kk in 0..self.cols step self.block_size {
+                    // Process block
+                    let i_end = min(ii + self.block_size, self.rows);
+                    let j_end = min(jj + self.block_size, other.cols);
+                    let k_end = min(kk + self.block_size, self.cols);
+                    
+                    for i in ii..i_end {
+                        for j in jj..j_end {
+                            let mut sum = 0.0;
+                            for k in kk..k_end {
+                                sum += self.get(i, k) * other.get(k, j);
+                            }
+                            result.add_to(i, j, sum);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    fn get(row: i64, col: i64) -> f64 {
+        return self.data[row * self.cols + col];
+    }
+    
+    fn set(row: i64, col: i64, value: f64) {
+        self.data[row * self.cols + col] = value;
+    }
+    
+    fn add_to(row: i64, col: i64, value: f64) {
+        self.data[row * self.cols + col] += value;
+    }
+}
+
+// Parallel Processing Example
+async fn parallel_map[T, R](data: array[T], transform: fn(T) -> R) -> array[R] {
+    let num_threads = runtime::get_cpu_count();
+    let chunk_size = data.length() / num_threads;
+    let mut results = array::new(data.length());
+    let mut handles = array::new(num_threads);
+    
+    // Spawn parallel tasks
+    for i in 0..num_threads {
+        let start = i * chunk_size;
+        let end = if i == num_threads - 1 { data.length() } else { (i + 1) * chunk_size };
+        
+        handles[i] = async {
+            for j in start..end {
+                results[j] = transform(data[j]);
+            }
+        };
+    }
+    
+    // Wait for all tasks to complete
+    for handle in handles {
+        await handle;
+    }
+    
+    return results;
+}
+
+// Branch Prediction Optimization
+fn optimized_search(data: array[i64], target: i64) -> Option[i64] {
+    let length = data.length();
+    
+    // Optimize for the common case (target found early)
+    // This helps with branch prediction
+    if length > 0 && data[0] == target {
+        return Some(0);
+    }
+    
+    // Use binary search for large arrays
+    if length > 32 {
+        return binary_search(data, target);
+    }
+    
+    // Linear search for small arrays (better cache performance)
+    for i in 1..length {
+        if data[i] == target {
+            return Some(i);
+        }
+    }
+    
+    return None;
+}
+
+fn binary_search(data: array[i64], target: i64) -> Option[i64] {
+    let mut left = 0;
+    let mut right = data.length() - 1;
+    
+    while left <= right {
+        let mid = left + (right - left) / 2;
+        let mid_value = data[mid];
+        
+        // Use likely/unlikely hints for branch prediction
+        if likely(mid_value == target) {
+            return Some(mid);
+        } else if mid_value < target {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+    
+    return None;
+}
+
+// Memory Prefetching Example
+fn prefetch_optimized_sum(data: array[f64]) -> f64 {
+    let mut sum = 0.0;
+    let prefetch_distance = 64; // Prefetch 64 elements ahead
+    
+    for i in 0..data.length() {
+        // Prefetch future data to improve cache performance
+        if i + prefetch_distance < data.length() {
+            prefetch(&data[i + prefetch_distance], prefetch_hint::temporal);
+        }
+        
+        sum += data[i];
+    }
+    
+    return sum;
+}
+
+// Performance Monitoring
+fn benchmark_function[T](func: fn() -> T, iterations: i64) -> PerformanceResults {
+    let mut times = array::new(iterations);
+    let mut total_time = 0;
+    
+    for i in 0..iterations {
+        let start = time::high_precision_now();
+        let result = func();
+        let end = time::high_precision_now();
+        
+        let elapsed = end - start;
+        times[i] = elapsed;
+        total_time += elapsed;
+    }
+    
+    let average_time = total_time / iterations;
+    let min_time = times.min();
+    let max_time = times.max();
+    
+    // Calculate standard deviation
+    let mut variance_sum = 0.0;
+    for time in times {
+        let diff = time - average_time;
+        variance_sum += diff * diff;
+    }
+    let std_dev = sqrt(variance_sum / iterations);
+    
+    return PerformanceResults {
+        iterations,
+        total_time,
+        average_time,
+        min_time,
+        max_time,
+        std_dev
+    };
+}
+
+class PerformanceResults {
+    iterations: i64;
+    total_time: i64;
+    average_time: i64;
+    min_time: i64;
+    max_time: i64;
+    std_dev: f64;
+    
+    fn print_summary() {
+        println("Performance Results:");
+        println("  Iterations: {}", self.iterations);
+        println("  Total Time: {}μs", self.total_time);
+        println("  Average Time: {}μs", self.average_time);
+        println("  Min Time: {}μs", self.min_time);
+        println("  Max Time: {}μs", self.max_time);
+        println("  Std Deviation: {:.2}μs", self.std_dev);
+        println("  Throughput: {:.2} ops/sec", 1_000_000.0 / self.average_time as f64);
+    }
+}
+
+// Main function to demonstrate performance optimizations
+fn main() {
+    println("Veyra Performance Optimization Examples");
+    
+    // Test JIT compilation
+    let data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    let result = hot_computation_loop(data);
+    println("Hot loop result: {}", result);
+    
+    // Test memory pool
+    let pool = MemoryPool::new(1024, 64);
+    if let Some(offset) = pool.allocate() {
+        println("Allocated memory at offset: {}", offset);
+        pool.deallocate(offset);
+    }
+    
+    // Test vectorized operations
+    let a = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
+    let b = [2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0];
+    let mut result_vec = array::new(8);
+    vectorized_add(a, b, result_vec);
+    println("Vectorized result: {:?}", result_vec);
+    
+    // Benchmark fibonacci
+    let fib_results = benchmark_function(|| fibonacci_recursive(30), 10);
+    fib_results.print_summary();
+}

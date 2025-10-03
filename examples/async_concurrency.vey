@@ -1,0 +1,606 @@
+# Async/Await and Concurrency in Veyra
+# Advanced concurrent programming patterns
+
+print("=== Async/Await and Concurrency ===")
+
+import std.async
+import std.time
+
+print("\n--- Basic Async/Await ---")
+
+# Simple async function
+async fn fetch_data(url) {
+    print("Fetching data from: " + url)
+    await sleep(1000)  # Simulate network delay
+    return "Data from " + url
+}
+
+# Using async/await
+async fn main_async() {
+    print("Starting async operations...")
+    
+    let data1 = await fetch_data("https://api1.example.com")
+    print("Received: " + data1)
+    
+    let data2 = await fetch_data("https://api2.example.com")
+    print("Received: " + data2)
+    
+    print("All data fetched!")
+}
+
+# Run async function
+run_async(main_async())
+
+print("\n--- Concurrent Execution ---")
+
+# Multiple async operations running concurrently
+async fn concurrent_fetching() {
+    print("Starting concurrent operations...")
+    
+    # Create multiple async tasks
+    let task1 = fetch_data("https://service1.com")
+    let task2 = fetch_data("https://service2.com") 
+    let task3 = fetch_data("https://service3.com")
+    
+    # Wait for all tasks to complete
+    let results = await Promise.all([task1, task2, task3])
+    
+    print("All results received:")
+    for i in range(len(results)) {
+        print("  " + str(i + 1) + ": " + results[i])
+    }
+}
+
+run_async(concurrent_fetching())
+
+print("\n--- Promise Handling ---")
+
+# Promise creation and handling
+fn create_delayed_promise(value, delay) {
+    return Promise.new(fn(resolve, reject) {
+        setTimeout(fn() {
+            if value > 0 {
+                resolve("Success: " + str(value))
+            } else {
+                reject("Error: Invalid value " + str(value))
+            }
+        }, delay)
+    })
+}
+
+async fn promise_examples() {
+    # Successful promise
+    try {
+        let result1 = await create_delayed_promise(42, 500)
+        print("Promise result: " + result1)
+    } catch error {
+        print("Promise error: " + str(error))
+    }
+    
+    # Failed promise
+    try {
+        let result2 = await create_delayed_promise(-1, 300)
+        print("Promise result: " + result2)
+    } catch error {
+        print("Promise error: " + str(error))
+    }
+}
+
+run_async(promise_examples())
+
+print("\n--- Task Scheduling and Management ---")
+
+# Task scheduler
+class TaskScheduler {
+    fn init(max_concurrent) {
+        self.max_concurrent = max_concurrent
+        self.running_tasks = []
+        self.pending_tasks = []
+        self.completed_tasks = []
+    }
+    
+    async fn schedule(task) {
+        if len(self.running_tasks) < self.max_concurrent {
+            self._run_task(task)
+        } else {
+            push(self.pending_tasks, task)
+        }
+    }
+    
+    async fn _run_task(task) {
+        push(self.running_tasks, task)
+        
+        try {
+            let result = await task()
+            push(self.completed_tasks, {"status": "success", "result": result})
+            print("Task completed successfully")
+        } catch error {
+            push(self.completed_tasks, {"status": "error", "error": str(error)})
+            print("Task failed: " + str(error))
+        }
+        
+        # Remove from running tasks
+        self.running_tasks = filter(self.running_tasks, fn(t) { return t != task })
+        
+        # Start next pending task if any
+        if len(self.pending_tasks) > 0 {
+            let next_task = pop_front(self.pending_tasks)
+            await self._run_task(next_task)
+        }
+    }
+    
+    async fn wait_all() {
+        while len(self.running_tasks) > 0 or len(self.pending_tasks) > 0 {
+            await sleep(100)
+        }
+        
+        return self.completed_tasks
+    }
+}
+
+# Example async tasks
+async fn cpu_intensive_task(id, duration) {
+    print("Starting CPU task " + str(id))
+    await sleep(duration)
+    
+    if id == 3 {
+        throw "Task " + str(id) + " failed"
+    }
+    
+    return "CPU task " + str(id) + " completed"
+}
+
+async fn scheduler_demo() {
+    let scheduler = TaskScheduler(2)  # Max 2 concurrent tasks
+    
+    # Schedule multiple tasks
+    await scheduler.schedule(fn() { return cpu_intensive_task(1, 1000) })
+    await scheduler.schedule(fn() { return cpu_intensive_task(2, 800) })
+    await scheduler.schedule(fn() { return cpu_intensive_task(3, 600) })
+    await scheduler.schedule(fn() { return cpu_intensive_task(4, 1200) })
+    await scheduler.schedule(fn() { return cpu_intensive_task(5, 400) })
+    
+    print("All tasks scheduled, waiting for completion...")
+    let results = await scheduler.wait_all()
+    
+    print("Scheduler results:")
+    for i in range(len(results)) {
+        let result = results[i]
+        if result["status"] == "success" {
+            print("  ✓ " + result["result"])
+        } else {
+            print("  ✗ " + result["error"])
+        }
+    }
+}
+
+run_async(scheduler_demo())
+
+print("\n--- Channels and Message Passing ---")
+
+# Channel for communication between async tasks
+class Channel {
+    fn init(buffer_size) {
+        self.buffer_size = buffer_size
+        self.buffer = []
+        self.senders = []
+        self.receivers = []
+        self.closed = false
+    }
+    
+    async fn send(value) {
+        if self.closed {
+            throw "Channel is closed"
+        }
+        
+        if len(self.buffer) < self.buffer_size {
+            push(self.buffer, value)
+            self._notify_receivers()
+        } else {
+            # Wait for buffer space
+            return Promise.new(fn(resolve, reject) {
+                push(self.senders, {"value": value, "resolve": resolve, "reject": reject})
+            })
+        }
+    }
+    
+    async fn receive() {
+        if len(self.buffer) > 0 {
+            let value = pop_front(self.buffer)
+            self._notify_senders()
+            return value
+        } elif self.closed {
+            throw "Channel is closed and empty"
+        } else {
+            # Wait for a value
+            return Promise.new(fn(resolve, reject) {
+                push(self.receivers, {"resolve": resolve, "reject": reject})
+            })
+        }
+    }
+    
+    fn close() {
+        self.closed = true
+        
+        # Reject all waiting senders
+        for sender in self.senders {
+            sender["reject"]("Channel closed")
+        }
+        self.senders = []
+        
+        # Reject all waiting receivers
+        for receiver in self.receivers {
+            receiver["reject"]("Channel closed")
+        }
+        self.receivers = []
+    }
+    
+    fn _notify_receivers() {
+        while len(self.buffer) > 0 and len(self.receivers) > 0 {
+            let value = pop_front(self.buffer)
+            let receiver = pop_front(self.receivers)
+            receiver["resolve"](value)
+        }
+    }
+    
+    fn _notify_senders() {
+        while len(self.buffer) < self.buffer_size and len(self.senders) > 0 {
+            let sender = pop_front(self.senders)
+            push(self.buffer, sender["value"])
+            sender["resolve"]()
+        }
+    }
+}
+
+# Producer-Consumer pattern with channels
+async fn producer(channel, name, count) {
+    for i in range(count) {
+        let item = name + "_item_" + str(i)
+        await channel.send(item)
+        print("Producer " + name + " sent: " + item)
+        await sleep(random_range(100, 500))
+    }
+    print("Producer " + name + " finished")
+}
+
+async fn consumer(channel, name) {
+    let processed = 0
+    
+    while true {
+        try {
+            let item = await channel.receive()
+            print("Consumer " + name + " received: " + item)
+            await sleep(random_range(200, 600))  # Simulate processing
+            processed = processed + 1
+        } catch error {
+            print("Consumer " + name + " stopping: " + str(error))
+            break
+        }
+    }
+    
+    print("Consumer " + name + " processed " + str(processed) + " items")
+}
+
+async fn channel_demo() {
+    let channel = Channel(3)  # Buffer size of 3
+    
+    # Start producers and consumers
+    let tasks = [
+        producer(channel, "P1", 5),
+        producer(channel, "P2", 3),
+        consumer(channel, "C1"),
+        consumer(channel, "C2")
+    ]
+    
+    # Wait for producers to finish
+    await sleep(5000)
+    
+    # Close channel and wait for consumers to finish
+    channel.close()
+    await sleep(1000)
+    
+    print("Channel demo completed")
+}
+
+run_async(channel_demo())
+
+print("\n--- Actor Model ---")
+
+# Actor-based concurrency
+class Actor {
+    fn init(name) {
+        self.name = name
+        self.mailbox = Channel(100)
+        self.running = false
+    }
+    
+    async fn start() {
+        if self.running {
+            return
+        }
+        
+        self.running = true
+        print("Actor " + self.name + " started")
+        
+        # Main actor loop
+        while self.running {
+            try {
+                let message = await self.mailbox.receive()
+                await self.handle_message(message)
+            } catch error {
+                if str(error) != "Channel closed" {
+                    print("Actor " + self.name + " error: " + str(error))
+                }
+                break
+            }
+        }
+        
+        print("Actor " + self.name + " stopped")
+    }
+    
+    async fn send(message) {
+        await self.mailbox.send(message)
+    }
+    
+    fn stop() {
+        self.running = false
+        self.mailbox.close()
+    }
+    
+    async fn handle_message(message) {
+        # Override in subclasses
+        print("Actor " + self.name + " received: " + str(message))
+    }
+}
+
+# Specific actor implementations
+class CalculatorActor extends Actor {
+    fn init(name) {
+        super.init(name)
+        self.result = 0
+    }
+    
+    async fn handle_message(message) {
+        match message {
+            {"operation": "add", "value": value, "reply_to": reply_actor} => {
+                self.result = self.result + value
+                if reply_actor != None {
+                    await reply_actor.send({
+                        "type": "result",
+                        "value": self.result,
+                        "operation": "add " + str(value)
+                    })
+                }
+            },
+            {"operation": "multiply", "value": value, "reply_to": reply_actor} => {
+                self.result = self.result * value
+                if reply_actor != None {
+                    await reply_actor.send({
+                        "type": "result", 
+                        "value": self.result,
+                        "operation": "multiply " + str(value)
+                    })
+                }
+            },
+            {"operation": "reset", "reply_to": reply_actor} => {
+                self.result = 0
+                if reply_actor != None {
+                    await reply_actor.send({
+                        "type": "result",
+                        "value": self.result,
+                        "operation": "reset"
+                    })
+                }
+            },
+            _ => {
+                print("Calculator " + self.name + " unknown operation: " + str(message))
+            }
+        }
+    }
+}
+
+class LoggerActor extends Actor {
+    async fn handle_message(message) {
+        match message {
+            {"type": "result", "value": value, "operation": operation} => {
+                print("LOG: Operation '" + operation + "' resulted in: " + str(value))
+            },
+            {"type": "log", "message": msg} => {
+                print("LOG: " + msg)
+            },
+            _ => {
+                print("LOG: Unknown message type: " + str(message))
+            }
+        }
+    }
+}
+
+async fn actor_demo() {
+    # Create actors
+    let calculator = CalculatorActor("calc1")
+    let logger = LoggerActor("logger1")
+    
+    # Start actors
+    spawn_task(calculator.start())
+    spawn_task(logger.start())
+    
+    await sleep(100)  # Let actors start
+    
+    # Send messages to calculator
+    await calculator.send({"operation": "add", "value": 10, "reply_to": logger})
+    await calculator.send({"operation": "multiply", "value": 3, "reply_to": logger})
+    await calculator.send({"operation": "add", "value": 5, "reply_to": logger})
+    await calculator.send({"operation": "reset", "reply_to": logger})
+    
+    # Send direct log message
+    await logger.send({"type": "log", "message": "Actor demo operations completed"})
+    
+    # Wait for processing
+    await sleep(1000)
+    
+    # Stop actors
+    calculator.stop()
+    logger.stop()
+    
+    await sleep(500)  # Let actors stop gracefully
+}
+
+run_async(actor_demo())
+
+print("\n--- Stream Processing ---")
+
+# Async streams
+class AsyncStream {
+    fn init(generator) {
+        self.generator = generator
+        self.closed = false
+    }
+    
+    async fn next() {
+        if self.closed {
+            return None
+        }
+        
+        try {
+            return await self.generator()
+        } catch StopIteration {
+            self.closed = true
+            return None
+        }
+    }
+    
+    async fn collect() {
+        let items = []
+        
+        while true {
+            let item = await self.next()
+            if item == None {
+                break
+            }
+            push(items, item)
+        }
+        
+        return items
+    }
+    
+    async fn map(transform_fn) {
+        return AsyncStream(async fn() {
+            let item = await self.next()
+            if item == None {
+                throw StopIteration()
+            }
+            return await transform_fn(item)
+        })
+    }
+    
+    async fn filter(predicate_fn) {
+        return AsyncStream(async fn() {
+            while true {
+                let item = await self.next()
+                if item == None {
+                    throw StopIteration()
+                }
+                if await predicate_fn(item) {
+                    return item
+                }
+            }
+        })
+    }
+    
+    async fn take(count) {
+        let taken = 0
+        return AsyncStream(async fn() {
+            if taken >= count {
+                throw StopIteration()
+            }
+            let item = await self.next()
+            if item == None {
+                throw StopIteration()
+            }
+            taken = taken + 1
+            return item
+        })
+    }
+}
+
+# Create an async stream of numbers
+fn number_stream(start, end, delay) {
+    let current = start
+    
+    return AsyncStream(async fn() {
+        if current > end {
+            throw StopIteration()
+        }
+        
+        await sleep(delay)
+        let value = current
+        current = current + 1
+        return value
+    })
+}
+
+async fn stream_demo() {
+    print("Creating async stream...")
+    
+    let stream = number_stream(1, 10, 200)
+    
+    # Transform stream: multiply by 2, then filter even numbers
+    let transformed = await stream.map(async fn(x) { return x * 2 })
+    let filtered = await transformed.filter(async fn(x) { return x % 4 == 0 })
+    let limited = await filtered.take(3)
+    
+    print("Processing stream...")
+    let results = await limited.collect()
+    
+    print("Stream results: " + str(results))
+}
+
+run_async(stream_demo())
+
+print("\n--- Backpressure and Flow Control ---")
+
+# Rate limiter
+class RateLimiter {
+    fn init(max_requests, time_window) {
+        self.max_requests = max_requests
+        self.time_window = time_window
+        self.requests = []
+    }
+    
+    async fn acquire() {
+        let now = time()
+        
+        # Remove old requests outside the time window
+        self.requests = filter(self.requests, fn(timestamp) {
+            return (now - timestamp) < self.time_window
+        })
+        
+        if len(self.requests) >= self.max_requests {
+            # Wait until we can make a request
+            let oldest_request = min(self.requests)
+            let wait_time = self.time_window - (now - oldest_request)
+            
+            if wait_time > 0 {
+                await sleep(wait_time)
+            }
+        }
+        
+        push(self.requests, now)
+    }
+}
+
+async fn rate_limiting_demo() {
+    let rate_limiter = RateLimiter(3, 2000)  # 3 requests per 2 seconds
+    
+    for i in range(8) {
+        let start_time = time()
+        await rate_limiter.acquire()
+        let end_time = time()
+        
+        print("Request " + str(i + 1) + " processed (waited " + str(end_time - start_time) + "ms)")
+    }
+}
+
+run_async(rate_limiting_demo())
+
+print("\n🎉 Async/Await and Concurrency demonstration complete!")

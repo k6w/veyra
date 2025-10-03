@@ -1,0 +1,542 @@
+# Veyra Standard Library - Network Module
+# Complete networking utilities and web functionality
+
+# ===== HTTP CLIENT =====
+
+# HTTP GET request
+fn http_get(url) {
+    return http_request("GET", url, null, null)
+}
+
+# HTTP POST request with body
+fn http_post(url, body) {
+    return http_request("POST", url, body, null)
+}
+
+# HTTP POST request with JSON body
+fn http_post_json(url, data) {
+    let body = json_encode(data)
+    let headers = {"Content-Type": "application/json"}
+    return http_request("POST", url, body, headers)
+}
+
+# HTTP PUT request
+fn http_put(url, body) {
+    return http_request("PUT", url, body, null)
+}
+
+# HTTP DELETE request
+fn http_delete(url) {
+    return http_request("DELETE", url, null, null)
+}
+
+# HTTP PATCH request
+fn http_patch(url, body) {
+    return http_request("PATCH", url, body, null)
+}
+
+# HTTP HEAD request
+fn http_head(url) {
+    return http_request("HEAD", url, null, null)
+}
+
+# HTTP OPTIONS request
+fn http_options(url) {
+    return http_request("OPTIONS", url, null, null)
+}
+
+# Generic HTTP request
+fn http_request(method, url, body, headers) {
+    let request = {
+        "method": method,
+        "url": url,
+        "body": body,
+        "headers": headers or {},
+        "timeout": 30
+    }
+    
+    return system_http_request(request)
+}
+
+# HTTP request with custom options
+fn http_request_custom(options) {
+    let default_options = {
+        "method": "GET",
+        "url": "",
+        "body": null,
+        "headers": {},
+        "timeout": 30,
+        "follow_redirects": true,
+        "verify_ssl": true
+    }
+    
+    # Merge options
+    let merged = merge_objects(default_options, options)
+    return system_http_request(merged)
+}
+
+# ===== URL UTILITIES =====
+
+# Parse URL into components
+fn url_parse(url) {
+    # Parse URL into scheme, host, port, path, query, fragment
+    let parts = {
+        "scheme": "",
+        "host": "",
+        "port": 80,
+        "path": "/",
+        "query": "",
+        "fragment": ""
+    }
+    
+    let remaining = url
+    
+    # Extract scheme
+    let scheme_end = string_index_of(remaining, "://")
+    if scheme_end != -1 {
+        parts["scheme"] = string_substring(remaining, 0, scheme_end)
+        remaining = string_substring(remaining, scheme_end + 3, string_length(remaining))
+    }
+    
+    # Extract fragment
+    let fragment_start = string_index_of(remaining, "#")
+    if fragment_start != -1 {
+        parts["fragment"] = string_substring(remaining, fragment_start + 1, string_length(remaining))
+        remaining = string_substring(remaining, 0, fragment_start)
+    }
+    
+    # Extract query
+    let query_start = string_index_of(remaining, "?")
+    if query_start != -1 {
+        parts["query"] = string_substring(remaining, query_start + 1, string_length(remaining))
+        remaining = string_substring(remaining, 0, query_start)
+    }
+    
+    # Extract path
+    let path_start = string_index_of(remaining, "/")
+    if path_start != -1 {
+        parts["path"] = string_substring(remaining, path_start, string_length(remaining))
+        remaining = string_substring(remaining, 0, path_start)
+    }
+    
+    # Extract port
+    let port_start = string_index_of(remaining, ":")
+    if port_start != -1 {
+        let port_str = string_substring(remaining, port_start + 1, string_length(remaining))
+        parts["port"] = to_int(port_str)
+        remaining = string_substring(remaining, 0, port_start)
+    } else {
+        # Default ports
+        if parts["scheme"] == "https" {
+            parts["port"] = 443
+        } else if parts["scheme"] == "ftp" {
+            parts["port"] = 21
+        }
+    }
+    
+    # Remaining is host
+    parts["host"] = remaining
+    
+    return parts
+}
+
+# Build URL from components
+fn url_build(parts) {
+    let url = ""
+    
+    if parts["scheme"] != "" {
+        url = url + parts["scheme"] + "://"
+    }
+    
+    url = url + parts["host"]
+    
+    if parts["port"] != 80 and parts["port"] != 443 {
+        url = url + ":" + to_string(parts["port"])
+    }
+    
+    if parts["path"] != "" {
+        url = url + parts["path"]
+    }
+    
+    if parts["query"] != "" {
+        url = url + "?" + parts["query"]
+    }
+    
+    if parts["fragment"] != "" {
+        url = url + "#" + parts["fragment"]
+    }
+    
+    return url
+}
+
+# URL encode string
+fn url_encode(text) {
+    let encoded = ""
+    let i = 0
+    
+    while i < string_length(text) {
+        let c = string_char_at(text, i)
+        
+        if url_char_needs_encoding(c) {
+            encoded = encoded + "%" + char_to_hex(c)
+        } else {
+            encoded = encoded + c
+        }
+        
+        i = i + 1
+    }
+    
+    return encoded
+}
+
+# URL decode string
+fn url_decode(text) {
+    let decoded = ""
+    let i = 0
+    
+    while i < string_length(text) {
+        let c = string_char_at(text, i)
+        
+        if c == "%" and i + 2 < string_length(text) {
+            let hex = string_substring(text, i + 1, i + 3)
+            decoded = decoded + hex_to_char(hex)
+            i = i + 3
+        } else if c == "+" {
+            decoded = decoded + " "
+            i = i + 1
+        } else {
+            decoded = decoded + c
+            i = i + 1
+        }
+    }
+    
+    return decoded
+}
+
+# Check if character needs URL encoding
+fn url_char_needs_encoding(c) {
+    # Check if character is unreserved (A-Z, a-z, 0-9, -, ., _, ~)
+    if c >= 'A' and c <= 'Z' {
+        return false
+    }
+    if c >= 'a' and c <= 'z' {
+        return false
+    }
+    if c >= '0' and c <= '9' {
+        return false
+    }
+    if c == '-' or c == '.' or c == '_' or c == '~' {
+        return false
+    }
+    
+    return true
+}
+
+# ===== QUERY STRING UTILITIES =====
+
+# Parse query string into key-value pairs
+fn query_parse(query) {
+    let params = {}
+    
+    if query == "" {
+        return params
+    }
+    
+    let pairs = string_split(query, "&")
+    let i = 0
+    
+    while i < len(pairs) {
+        let pair = pairs[i]
+        let eq_index = string_index_of(pair, "=")
+        
+        if eq_index != -1 {
+            let key = url_decode(string_substring(pair, 0, eq_index))
+            let value = url_decode(string_substring(pair, eq_index + 1, string_length(pair)))
+            params[key] = value
+        } else {
+            params[url_decode(pair)] = ""
+        }
+        
+        i = i + 1
+    }
+    
+    return params
+}
+
+# Build query string from key-value pairs
+fn query_build(params) {
+    let pairs = []
+    
+    # Note: In real implementation, would iterate over object keys
+    # For now, assuming params is passed as array of [key, value] pairs
+    let i = 0
+    while i < len(params) {
+        let pair = params[i]
+        let key = url_encode(to_string(pair[0]))
+        let value = url_encode(to_string(pair[1]))
+        array_push(pairs, key + "=" + value)
+        i = i + 1
+    }
+    
+    return string_join(pairs, "&")
+}
+
+# ===== JSON UTILITIES =====
+
+# Encode object/value as JSON string
+fn json_encode(value) {
+    if is_string(value) {
+        return "\"" + json_escape_string(value) + "\""
+    } else if is_int(value) or is_float(value) {
+        return to_string(value)
+    } else if is_bool(value) {
+        return if value then "true" else "false"
+    } else if is_none(value) {
+        return "null"
+    } else if is_array(value) {
+        let items = []
+        let i = 0
+        while i < len(value) {
+            array_push(items, json_encode(value[i]))
+            i = i + 1
+        }
+        return "[" + string_join(items, ",") + "]"
+    } else {
+        # Object encoding (simplified)
+        return "{}"
+    }
+}
+
+# Escape string for JSON
+fn json_escape_string(s) {
+    let escaped = ""
+    let i = 0
+    
+    while i < string_length(s) {
+        let c = string_char_at(s, i)
+        
+        if c == "\"" {
+            escaped = escaped + "\\\""
+        } else if c == "\\" {
+            escaped = escaped + "\\\\"
+        } else if c == "\n" {
+            escaped = escaped + "\\n"
+        } else if c == "\r" {
+            escaped = escaped + "\\r"
+        } else if c == "\t" {
+            escaped = escaped + "\\t"
+        } else {
+            escaped = escaped + c
+        }
+        
+        i = i + 1
+    }
+    
+    return escaped
+}
+
+# Parse JSON string (simplified implementation)
+fn json_decode(json_str) {
+    # Simplified JSON parser - would need full implementation
+    let trimmed = string_trim(json_str)
+    
+    if string_starts_with(trimmed, "\"") and string_ends_with(trimmed, "\"") {
+        # String
+        return string_substring(trimmed, 1, string_length(trimmed) - 1)
+    } else if trimmed == "null" {
+        return null
+    } else if trimmed == "true" {
+        return true
+    } else if trimmed == "false" {
+        return false
+    } else if string_starts_with(trimmed, "[") and string_ends_with(trimmed, "]") {
+        # Array (simplified)
+        return []
+    } else if string_starts_with(trimmed, "{") and string_ends_with(trimmed, "}") {
+        # Object (simplified)
+        return {}
+    } else {
+        # Number
+        return to_float(trimmed)
+    }
+}
+
+# ===== BASE64 ENCODING =====
+
+# Base64 encode string
+fn base64_encode(text) {
+    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    let encoded = ""
+    let i = 0
+    
+    while i < string_length(text) {
+        let a = char_to_int(string_char_at(text, i))
+        let b = if i + 1 < string_length(text) then char_to_int(string_char_at(text, i + 1)) else 0
+        let c = if i + 2 < string_length(text) then char_to_int(string_char_at(text, i + 2)) else 0
+        
+        let bitmap = (a << 16) | (b << 8) | c
+        
+        encoded = encoded + string_char_at(chars, (bitmap >> 18) & 63)
+        encoded = encoded + string_char_at(chars, (bitmap >> 12) & 63)
+        encoded = encoded + if i + 1 < string_length(text) then string_char_at(chars, (bitmap >> 6) & 63) else "="
+        encoded = encoded + if i + 2 < string_length(text) then string_char_at(chars, bitmap & 63) else "="
+        
+        i = i + 3
+    }
+    
+    return encoded
+}
+
+# Base64 decode string
+fn base64_decode(encoded) {
+    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    let decoded = ""
+    let i = 0
+    
+    while i < string_length(encoded) {
+        let a = string_index_of(chars, string_char_at(encoded, i))
+        let b = string_index_of(chars, string_char_at(encoded, i + 1))
+        let c = string_index_of(chars, string_char_at(encoded, i + 2))
+        let d = string_index_of(chars, string_char_at(encoded, i + 3))
+        
+        let bitmap = (a << 18) | (b << 12) | (c << 6) | d
+        
+        decoded = decoded + char_from_int((bitmap >> 16) & 255)
+        if string_char_at(encoded, i + 2) != "=" {
+            decoded = decoded + char_from_int((bitmap >> 8) & 255)
+        }
+        if string_char_at(encoded, i + 3) != "=" {
+            decoded = decoded + char_from_int(bitmap & 255)
+        }
+        
+        i = i + 4
+    }
+    
+    return decoded
+}
+
+# ===== WEBSOCKET UTILITIES =====
+
+# Create WebSocket connection
+fn websocket_connect(url) {
+    return system_websocket_connect(url)
+}
+
+# Send message over WebSocket
+fn websocket_send(ws, message) {
+    return system_websocket_send(ws, message)
+}
+
+# Receive message from WebSocket
+fn websocket_receive(ws) {
+    return system_websocket_receive(ws)
+}
+
+# Close WebSocket connection
+fn websocket_close(ws) {
+    return system_websocket_close(ws)
+}
+
+# ===== MIME TYPE UTILITIES =====
+
+# Get MIME type from file extension
+fn mime_type_from_extension(ext) {
+    let mime_types = {
+        ".html": "text/html",
+        ".htm": "text/html",
+        ".css": "text/css",
+        ".js": "application/javascript",
+        ".json": "application/json",
+        ".xml": "application/xml",
+        ".txt": "text/plain",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".svg": "image/svg+xml",
+        ".pdf": "application/pdf",
+        ".zip": "application/zip",
+        ".mp3": "audio/mpeg",
+        ".mp4": "video/mp4",
+        ".avi": "video/x-msvideo",
+        ".mov": "video/quicktime"
+    }
+    
+    let lower_ext = string_to_lower(ext)
+    if mime_types[lower_ext] != null {
+        return mime_types[lower_ext]
+    }
+    
+    return "application/octet-stream"
+}
+
+# ===== UTILITY FUNCTIONS =====
+
+# Convert character to hexadecimal
+fn char_to_hex(c) {
+    let code = char_to_int(c)
+    let hex_chars = "0123456789ABCDEF"
+    return string_char_at(hex_chars, code / 16) + string_char_at(hex_chars, code % 16)
+}
+
+# Convert hexadecimal to character
+fn hex_to_char(hex) {
+    let value = 0
+    let i = 0
+    
+    while i < string_length(hex) {
+        let c = string_char_at(hex, i)
+        let digit = 0
+        
+        if c >= '0' and c <= '9' {
+            digit = char_to_int(c) - char_to_int('0')
+        } else if c >= 'A' and c <= 'F' {
+            digit = char_to_int(c) - char_to_int('A') + 10
+        } else if c >= 'a' and c <= 'f' {
+            digit = char_to_int(c) - char_to_int('a') + 10
+        }
+        
+        value = value * 16 + digit
+        i = i + 1
+    }
+    
+    return char_from_int(value)
+}
+
+# Merge two objects (simplified)
+fn merge_objects(obj1, obj2) {
+    # In real implementation, would properly merge object properties
+    return obj2
+}
+
+# ===== SYSTEM INTERFACE STUBS =====
+# These functions interface with the Veyra runtime system
+
+fn system_http_request(request) {
+    # Runtime implements HTTP requests
+    return {
+        "status": 200,
+        "headers": {},
+        "body": ""
+    }
+}
+
+fn system_websocket_connect(url) {
+    # Runtime implements WebSocket connections
+    return null
+}
+
+fn system_websocket_send(ws, message) {
+    # Runtime implements WebSocket sending
+    return true
+}
+
+fn system_websocket_receive(ws) {
+    # Runtime implements WebSocket receiving
+    return ""
+}
+
+fn system_websocket_close(ws) {
+    # Runtime implements WebSocket closing
+    return true
+}

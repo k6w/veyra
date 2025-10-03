@@ -1,0 +1,18 @@
+let mut count = 0
+
+while count < 5 {
+    print(count)
+    count = count + 1
+}
+
+print("Done")
+
+let mut sum = 0
+let mut i = 1
+
+while i <= 10 {
+    sum = sum + i
+    i = i + 1
+}
+
+print(sum)

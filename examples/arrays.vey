@@ -1,0 +1,8 @@
+let numbers = [1, 2, 3, 4, 5]
+print(numbers)
+
+let fruits = ["apple", "banana", "cherry"]
+print(fruits)
+
+let mixed = [1, "hello", true]
+print(mixed)

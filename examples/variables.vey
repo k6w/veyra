@@ -1,0 +1,38 @@
+# Variable Declaration and Assignment Examples
+
+# Basic variable declaration
+let message = "Hello, Veyra!"
+print(message)
+
+# Variable with type annotation
+let count: i32 = 42
+print(count)
+
+# Mutable variable
+let mut counter = 0
+print(counter)
+
+# Assignment
+counter = 5
+print(counter)
+
+# Compound assignment
+counter += 10
+print(counter)
+
+# Multiple variables
+let x = 100
+let y = 200
+let sum = x + y
+print(sum)
+
+# Boolean variables
+let is_active = true
+let is_disabled = false
+print(is_active)
+print(is_disabled)
+
+# String interpolation (when we implement it)
+let name = "World"
+let greeting = "Hello, " + name + "!"
+print(greeting)

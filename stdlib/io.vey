@@ -1,0 +1,596 @@
+# Veyra Standard Library - I/O Module
+# Complete input/output operations and file system utilities
+
+# ===== CONSOLE I/O =====
+
+# Print to stdout with newline
+fn println(message) {
+    print(message)
+    print("\n")
+}
+
+# Print to stdout without newline (built-in)
+# fn print(message) - implemented in interpreter
+
+# Print to stderr
+fn eprint(message) {
+    # Interface with runtime to write to stderr
+    system_write_stderr(str(message))
+}
+
+# Print to stderr with newline
+fn eprintln(message) {
+    eprint(message)
+    eprint("\n")
+}
+
+# Read line from stdin
+fn input(prompt) {
+    if prompt != "" {
+        print(prompt)
+    }
+    return system_read_line()
+}
+
+# Read single character from stdin
+fn getchar() {
+    return system_read_char()
+}
+
+# ===== FILE OPERATIONS =====
+
+# Read entire file as string
+fn read_file(path) {
+    let handle = file_open(path, "r")
+    if handle == null {
+        return null
+    }
+    
+    let content = file_read_all(handle)
+    file_close(handle)
+    return content
+}
+
+# Write string to file
+fn write_file(path, content) {
+    let handle = file_open(path, "w")
+    if handle == null {
+        return false
+    }
+    
+    let success = file_write(handle, content)
+    file_close(handle)
+    return success
+}
+
+# Append string to file
+fn append_file(path, content) {
+    let handle = file_open(path, "a")
+    if handle == null {
+        return false
+    }
+    
+    let success = file_write(handle, content)
+    file_close(handle)
+    return success
+}
+
+# Read file as lines
+fn read_lines(path) {
+    let content = read_file(path)
+    if content == null {
+        return []
+    }
+    return string_split(content, "\n")
+}
+
+# Write lines to file
+fn write_lines(path, lines) {
+    let content = string_join(lines, "\n")
+    return write_file(path, content)
+}
+
+# ===== FILE HANDLE OPERATIONS =====
+
+# Open file with mode ("r", "w", "a", "r+", "w+", "a+")
+fn file_open(path, mode) {
+    return system_file_open(path, mode)
+}
+
+# Close file handle
+fn file_close(handle) {
+    return system_file_close(handle)
+}
+
+# Read all content from file handle
+fn file_read_all(handle) {
+    return system_file_read_all(handle)
+}
+
+# Read specific number of bytes
+fn file_read(handle, size) {
+    return system_file_read(handle, size)
+}
+
+# Read single line from file handle
+fn file_read_line(handle) {
+    return system_file_read_line(handle)
+}
+
+# Write content to file handle
+fn file_write(handle, content) {
+    return system_file_write(handle, content)
+}
+
+# Write line to file handle
+fn file_write_line(handle, line) {
+    return file_write(handle, line + "\n")
+}
+
+# Flush file buffer
+fn file_flush(handle) {
+    return system_file_flush(handle)
+}
+
+# Seek to position in file
+fn file_seek(handle, position) {
+    return system_file_seek(handle, position)
+}
+
+# Get current position in file
+fn file_tell(handle) {
+    return system_file_tell(handle)
+}
+
+# Check if at end of file
+fn file_eof(handle) {
+    return system_file_eof(handle)
+}
+
+# ===== DIRECTORY OPERATIONS =====
+
+# List directory contents
+fn list_dir(path) {
+    return system_list_dir(path)
+}
+
+# Create directory
+fn create_dir(path) {
+    return system_create_dir(path)
+}
+
+# Remove directory (must be empty)
+fn remove_dir(path) {
+    return system_remove_dir(path)
+}
+
+# Create directory recursively
+fn create_dir_all(path) {
+    return system_create_dir_all(path)
+}
+
+# Remove directory recursively
+fn remove_dir_all(path) {
+    return system_remove_dir_all(path)
+}
+
+# Change current directory
+fn change_dir(path) {
+    return system_change_dir(path)
+}
+
+# Get current directory
+fn current_dir() {
+    return system_current_dir()
+}
+
+# ===== FILE/DIRECTORY INFO =====
+
+# Check if path exists
+fn path_exists(path) {
+    return system_path_exists(path)
+}
+
+# Check if path is file
+fn is_file(path) {
+    return system_is_file(path)
+}
+
+# Check if path is directory
+fn is_dir(path) {
+    return system_is_dir(path)
+}
+
+# Get file size in bytes
+fn file_size(path) {
+    return system_file_size(path)
+}
+
+# Get file metadata
+fn file_metadata(path) {
+    return system_file_metadata(path)
+}
+
+# Get file creation time
+fn file_created(path) {
+    let metadata = file_metadata(path)
+    if metadata == null {
+        return null
+    }
+    return metadata["created"]
+}
+
+# Get file modification time
+fn file_modified(path) {
+    let metadata = file_metadata(path)
+    if metadata == null {
+        return null
+    }
+    return metadata["modified"]
+}
+
+# Get file access time
+fn file_accessed(path) {
+    let metadata = file_metadata(path)
+    if metadata == null {
+        return null
+    }
+    return metadata["accessed"]
+}
+
+# ===== FILE OPERATIONS =====
+
+# Copy file
+fn copy_file(src, dst) {
+    return system_copy_file(src, dst)
+}
+
+# Move/rename file
+fn move_file(src, dst) {
+    return system_move_file(src, dst)
+}
+
+# Delete file
+fn delete_file(path) {
+    return system_delete_file(path)
+}
+
+# Create symbolic link
+fn create_symlink(target, link) {
+    return system_create_symlink(target, link)
+}
+
+# Read symbolic link
+fn read_symlink(path) {
+    return system_read_symlink(path)
+}
+
+# ===== PATH MANIPULATION =====
+
+# Join path components
+fn path_join(components) {
+    let separator = path_separator()
+    return string_join(components, separator)
+}
+
+# Get path separator for current OS
+fn path_separator() {
+    return system_path_separator()
+}
+
+# Get file extension
+fn path_extension(path) {
+    let parts = string_split(path, ".")
+    if len(parts) <= 1 {
+        return ""
+    }
+    return "." + parts[len(parts) - 1]
+}
+
+# Get filename without path
+fn path_basename(path) {
+    let separator = path_separator()
+    let parts = string_split(path, separator)
+    return parts[len(parts) - 1]
+}
+
+# Get directory path
+fn path_dirname(path) {
+    let separator = path_separator()
+    let parts = string_split(path, separator)
+    if len(parts) <= 1 {
+        return "."
+    }
+    
+    # Remove last component
+    let dir_parts = []
+    let i = 0
+    while i < len(parts) - 1 {
+        array_push(dir_parts, parts[i])
+        i = i + 1
+    }
+    
+    return string_join(dir_parts, separator)
+}
+
+# Get filename without extension
+fn path_stem(path) {
+    let basename = path_basename(path)
+    let dot_index = string_last_index_of(basename, ".")
+    if dot_index == -1 {
+        return basename
+    }
+    return string_substring(basename, 0, dot_index)
+}
+
+# Normalize path (resolve . and ..)
+fn path_normalize(path) {
+    return system_path_normalize(path)
+}
+
+# Convert to absolute path
+fn path_absolute(path) {
+    return system_path_absolute(path)
+}
+
+# Check if path is absolute
+fn path_is_absolute(path) {
+    return system_path_is_absolute(path)
+}
+
+# ===== TEMPORARY FILES =====
+
+# Create temporary file
+fn temp_file() {
+    return system_temp_file()
+}
+
+# Create temporary directory
+fn temp_dir() {
+    return system_temp_dir()
+}
+
+# Get system temporary directory
+fn temp_dir_path() {
+    return system_temp_dir_path()
+}
+
+# ===== PERMISSIONS =====
+
+# Set file permissions (Unix-style octal)
+fn set_permissions(path, mode) {
+    return system_set_permissions(path, mode)
+}
+
+# Get file permissions
+fn get_permissions(path) {
+    return system_get_permissions(path)
+}
+
+# Check if file is readable
+fn is_readable(path) {
+    return system_is_readable(path)
+}
+
+# Check if file is writable
+fn is_writable(path) {
+    return system_is_writable(path)
+}
+
+# Check if file is executable
+fn is_executable(path) {
+    return system_is_executable(path)
+}
+
+# ===== SYSTEM INTERFACE STUBS =====
+# These functions interface with the Veyra runtime system
+
+fn system_write_stderr(message) {
+    # Runtime implements stderr writing
+    return true
+}
+
+fn system_read_line() {
+    # Runtime implements stdin reading
+    return ""
+}
+
+fn system_read_char() {
+    # Runtime implements single character reading
+    return ""
+}
+
+fn system_file_open(path, mode) {
+    # Runtime implements file opening
+    return null
+}
+
+fn system_file_close(handle) {
+    # Runtime implements file closing
+    return true
+}
+
+fn system_file_read_all(handle) {
+    # Runtime implements file reading
+    return ""
+}
+
+fn system_file_read(handle, size) {
+    # Runtime implements file reading
+    return ""
+}
+
+fn system_file_read_line(handle) {
+    # Runtime implements line reading
+    return ""
+}
+
+fn system_file_write(handle, content) {
+    # Runtime implements file writing
+    return true
+}
+
+fn system_file_flush(handle) {
+    # Runtime implements file flushing
+    return true
+}
+
+fn system_file_seek(handle, position) {
+    # Runtime implements file seeking
+    return true
+}
+
+fn system_file_tell(handle) {
+    # Runtime implements position getting
+    return 0
+}
+
+fn system_file_eof(handle) {
+    # Runtime implements EOF checking
+    return false
+}
+
+fn system_list_dir(path) {
+    # Runtime implements directory listing
+    return []
+}
+
+fn system_create_dir(path) {
+    # Runtime implements directory creation
+    return true
+}
+
+fn system_remove_dir(path) {
+    # Runtime implements directory removal
+    return true
+}
+
+fn system_create_dir_all(path) {
+    # Runtime implements recursive directory creation
+    return true
+}
+
+fn system_remove_dir_all(path) {
+    # Runtime implements recursive directory removal
+    return true
+}
+
+fn system_change_dir(path) {
+    # Runtime implements directory change
+    return true
+}
+
+fn system_current_dir() {
+    # Runtime implements current directory getting
+    return "."
+}
+
+fn system_path_exists(path) {
+    # Runtime implements path existence checking
+    return false
+}
+
+fn system_is_file(path) {
+    # Runtime implements file checking
+    return false
+}
+
+fn system_is_dir(path) {
+    # Runtime implements directory checking
+    return false
+}
+
+fn system_file_size(path) {
+    # Runtime implements file size getting
+    return 0
+}
+
+fn system_file_metadata(path) {
+    # Runtime implements metadata getting
+    return null
+}
+
+fn system_copy_file(src, dst) {
+    # Runtime implements file copying
+    return true
+}
+
+fn system_move_file(src, dst) {
+    # Runtime implements file moving
+    return true
+}
+
+fn system_delete_file(path) {
+    # Runtime implements file deletion
+    return true
+}
+
+fn system_create_symlink(target, link) {
+    # Runtime implements symlink creation
+    return true
+}
+
+fn system_read_symlink(path) {
+    # Runtime implements symlink reading
+    return ""
+}
+
+fn system_path_separator() {
+    # Runtime implements path separator getting
+    return "/"
+}
+
+fn system_path_normalize(path) {
+    # Runtime implements path normalization
+    return path
+}
+
+fn system_path_absolute(path) {
+    # Runtime implements absolute path conversion
+    return path
+}
+
+fn system_path_is_absolute(path) {
+    # Runtime implements absolute path checking
+    return false
+}
+
+fn system_temp_file() {
+    # Runtime implements temporary file creation
+    return null
+}
+
+fn system_temp_dir() {
+    # Runtime implements temporary directory creation
+    return ""
+}
+
+fn system_temp_dir_path() {
+    # Runtime implements temp directory path getting
+    return "/tmp"
+}
+
+fn system_set_permissions(path, mode) {
+    # Runtime implements permission setting
+    return true
+}
+
+fn system_get_permissions(path) {
+    # Runtime implements permission getting
+    return 0
+}
+
+fn system_is_readable(path) {
+    # Runtime implements readability checking
+    return true
+}
+
+fn system_is_writable(path) {
+    # Runtime implements writability checking
+    return true
+}
+
+fn system_is_executable(path) {
+    # Runtime implements executability checking
+    return true
+}

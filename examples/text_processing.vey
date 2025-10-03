@@ -1,0 +1,65 @@
+# Practical Veyra Example - Text Processing Tool
+# This demonstrates how to use stdlib modules in real applications
+
+import std.io
+import std.string
+
+print("=== Veyra Text Processing Tool ===")
+
+# File processing example
+let filename = "data.txt"
+print("Processing file: " + filename)
+
+# Check if file exists
+let exists = file_exists(filename)
+if exists {
+    print("File found!")
+    
+    # Read file content
+    let content = read_file(filename)
+    print("File content loaded")
+    
+    # Process the text
+    let lines = str_split(content, "\n")
+    print("Split into lines")
+    
+    let mut processed_lines = []
+    for line in lines {
+        # Clean up each line
+        let cleaned = str_trim(line)
+        let upper = str_upper(cleaned)
+        push(processed_lines, upper)
+    }
+    
+    # Join back together
+    let result = str_join(processed_lines, "\n")
+    
+    # Save processed file
+    let output_file = "processed_" + filename
+    write_file(output_file, result)
+    
+    print("Text processing complete!")
+    print("Output saved to: " + output_file)
+} else {
+    print("File not found: " + filename)
+}
+
+# String analysis example
+print("\n--- String Analysis ---")
+let sample_text = "Hello, Veyra Programming Language!"
+
+print("Original: " + sample_text)
+print("Length: " + str(str_length(sample_text)))
+print("Uppercase: " + str_upper(sample_text))
+print("Lowercase: " + str_lower(sample_text))
+
+let contains_veyra = str_contains(sample_text, "Veyra")
+if contains_veyra {
+    print("Text contains 'Veyra'!")
+}
+
+# Word processing
+let words = str_split(sample_text, " ")
+print("Word count: " + str(len(words)))
+
+print("=== Processing Complete ===")

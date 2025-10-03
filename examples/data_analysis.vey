@@ -1,0 +1,163 @@
+# Real-World Veyra Application - Data Analysis Tool
+# This demonstrates practical programming with current features
+
+print("=== Veyra Data Analysis Tool ===")
+
+# Sample dataset - sales data
+let sales_data = [
+    150, 200, 175, 300, 250, 180, 220, 190, 280, 160,
+    240, 210, 320, 180, 200, 260, 195, 225, 275, 185
+]
+
+let product_names = [
+    "Laptop", "Mouse", "Keyboard", "Monitor", "Speaker",
+    "Webcam", "Headset", "Tablet", "Phone", "Charger",
+    "Cable", "Drive", "Router", "Printer", "Scanner",
+    "Camera", "Microphone", "Stand", "Dock", "Adapter"
+]
+
+print("Dataset loaded: " + str(len(sales_data)) + " products")
+print("")
+
+# Basic statistics functions
+fn calculate_sum(data) {
+    let mut total = 0
+    for value in data {
+        total = total + value
+    }
+    return total
+}
+
+fn calculate_average(data) {
+    let sum = calculate_sum(data)
+    let count = len(data)
+    return sum / count
+}
+
+fn find_minimum(data) {
+    let mut min_val = data[0]
+    for value in data {
+        if value < min_val {
+            min_val = value
+        }
+    }
+    return min_val
+}
+
+fn find_maximum(data) {
+    let mut max_val = data[0]
+    for value in data {
+        if value > max_val {
+            max_val = value
+        }
+    }
+    return max_val
+}
+
+fn find_product_with_value(names, values, target_value) {
+    let mut i = 0
+    while i < len(values) {
+        if values[i] == target_value {
+            return names[i]
+        }
+        i = i + 1
+    }
+    return "Not found"
+}
+
+# Data analysis
+print("--- Sales Analysis ---")
+let total_sales = calculate_sum(sales_data)
+let average_sales = calculate_average(sales_data)
+let min_sales = find_minimum(sales_data)
+let max_sales = find_maximum(sales_data)
+
+print("Total Sales: $" + str(total_sales))
+print("Average Sales: $" + str(average_sales))
+print("Minimum Sales: $" + str(min_sales))
+print("Maximum Sales: $" + str(max_sales))
+
+let best_product = find_product_with_value(product_names, sales_data, max_sales)
+let worst_product = find_product_with_value(product_names, sales_data, min_sales)
+
+print("Best Selling Product: " + best_product + " ($" + str(max_sales) + ")")
+print("Worst Selling Product: " + worst_product + " ($" + str(min_sales) + ")")
+
+# Sales categories
+print("\n--- Sales Categories ---")
+let high_performers = []
+let average_performers = []
+let low_performers = []
+
+let mut i = 0
+while i < len(sales_data) {
+    let sales = sales_data[i]
+    let product = product_names[i]
+    
+    if sales >= 250 {
+        push(high_performers, product)
+    } elif sales >= 200 {
+        push(average_performers, product)
+    } else {
+        push(low_performers, product)
+    }
+    
+    i = i + 1
+}
+
+print("High Performers (≥$250): " + str(len(high_performers)) + " products")
+for product in high_performers {
+    print("  - " + product)
+}
+
+print("Average Performers ($200-249): " + str(len(average_performers)) + " products")
+for product in average_performers {
+    print("  - " + product)
+}
+
+print("Low Performers (<$200): " + str(len(low_performers)) + " products")
+for product in low_performers {
+    print("  - " + product)
+}
+
+# Growth simulation
+print("\n--- Growth Simulation ---")
+fn simulate_growth(initial_sales, growth_rate, periods) {
+    print("Simulating " + str(periods) + " periods with " + str(growth_rate) + "% growth")
+    
+    let mut current_sales = initial_sales
+    let mut period = 1
+    
+    while period <= periods {
+        current_sales = current_sales * (1.0 + growth_rate / 100.0)
+        print("Period " + str(period) + ": $" + str(current_sales))
+        period = period + 1
+    }
+    
+    return current_sales
+}
+
+let projected_total = simulate_growth(total_sales, 15, 5)
+print("5-year projection: $" + str(projected_total))
+
+# Revenue targets
+print("\n--- Revenue Target Analysis ---")
+let quarterly_target = 1500
+let current_quarter = calculate_sum([sales_data[0], sales_data[1], sales_data[2], sales_data[3], sales_data[4]])
+
+print("Quarterly Target: $" + str(quarterly_target))
+print("Current Quarter (first 5 products): $" + str(current_quarter))
+
+if current_quarter >= quarterly_target {
+    print("✅ Target ACHIEVED!")
+    let surplus = current_quarter - quarterly_target
+    print("Surplus: $" + str(surplus))
+} else {
+    print("❌ Target not met")
+    let deficit = quarterly_target - current_quarter
+    print("Deficit: $" + str(deficit))
+    print("Need " + str(deficit / len([1, 2, 3, 4, 5])) + " more per product on average")
+}
+
+print("\n=== Analysis Complete ===")
+print("Thank you for using Veyra Data Analysis Tool!")

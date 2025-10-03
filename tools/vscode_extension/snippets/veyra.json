@@ -1,0 +1,114 @@
+{
+  "Variable Declaration": {
+    "prefix": "let",
+    "body": [
+      "let ${1:name} = ${2:value}"
+    ],
+    "description": "Declare a variable"
+  },
+  "Function Declaration": {
+    "prefix": "fn",
+    "body": [
+      "fn ${1:name}(${2:params}) {",
+      "\t${3:body}",
+      "}"
+    ],
+    "description": "Declare a function"
+  },
+  "If Statement": {
+    "prefix": "if",
+    "body": [
+      "if ${1:condition} {",
+      "\t${2:body}",
+      "}"
+    ],
+    "description": "If statement"
+  },
+  "If-Else Statement": {
+    "prefix": "ifelse",
+    "body": [
+      "if ${1:condition} {",
+      "\t${2:body}",
+      "} else {",
+      "\t${3:else_body}",
+      "}"
+    ],
+    "description": "If-else statement"
+  },
+  "While Loop": {
+    "prefix": "while",
+    "body": [
+      "while ${1:condition} {",
+      "\t${2:body}",
+      "}"
+    ],
+    "description": "While loop"
+  },
+  "For Loop": {
+    "prefix": "for",
+    "body": [
+      "for ${1:item} in ${2:iterable} {",
+      "\t${3:body}",
+      "}"
+    ],
+    "description": "For loop"
+  },
+  "Print Statement": {
+    "prefix": "print",
+    "body": [
+      "print(${1:value})"
+    ],
+    "description": "Print a value"
+  },
+  "Array Declaration": {
+    "prefix": "array",
+    "body": [
+      "let ${1:name} = [${2:elements}]"
+    ],
+    "description": "Declare an array"
+  },
+  "Main Function": {
+    "prefix": "main",
+    "body": [
+      "fn main() {",
+      "\t${1:body}",
+      "}",
+      "",
+      "main()"
+    ],
+    "description": "Main function template"
+  },
+  "Import Statement": {
+    "prefix": "import",
+    "body": [
+      "import ${1:module}"
+    ],
+    "description": "Import a module"
+  },
+  "Return Statement": {
+    "prefix": "return",
+    "body": [
+      "return ${1:value}"
+    ],
+    "description": "Return a value"
+  },
+  "Fibonacci Function": {
+    "prefix": "fibonacci",
+    "body": [
+      "fn fibonacci(n) {",
+      "\tif n <= 1 {",
+      "\t\treturn n",
+      "\t}",
+      "\treturn fibonacci(n - 1) + fibonacci(n - 2)",
+      "}"
+    ],
+    "description": "Fibonacci function implementation"
+  },
+  "Comment Block": {
+    "prefix": "comment",
+    "body": [
+      "# ${1:comment}"
+    ],
+    "description": "Add a comment"
+  }
+}

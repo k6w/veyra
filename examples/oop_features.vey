@@ -1,0 +1,382 @@
+# Object-Oriented Programming Features Example
+# Demonstrates classes, inheritance, and polymorphism in Veyra
+
+print("=== Object-Oriented Programming in Veyra ===")
+
+# Class definition with constructor and methods
+class Animal {
+    fn init(name, species) {
+        self.name = name
+        self.species = species
+        self.energy = 100
+    }
+    
+    fn speak() {
+        print(self.name + " makes a sound")
+    }
+    
+    fn move() {
+        self.energy = self.energy - 10
+        print(self.name + " moves (energy: " + str(self.energy) + ")")
+    }
+    
+    fn eat(food) {
+        self.energy = self.energy + 20
+        print(self.name + " eats " + food + " (energy: " + str(self.energy) + ")")
+    }
+    
+    fn get_info() {
+        return {
+            "name": self.name,
+            "species": self.species,
+            "energy": self.energy
+        }
+    }
+}
+
+# Inheritance - Dog inherits from Animal
+class Dog extends Animal {
+    fn init(name, breed) {
+        super.init(name, "Canine")
+        self.breed = breed
+        self.loyalty = 100
+    }
+    
+    # Method overriding
+    fn speak() {
+        print(self.name + " barks: Woof!")
+    }
+    
+    # Additional methods specific to Dog
+    fn fetch(item) {
+        print(self.name + " fetches the " + item)
+        self.loyalty = self.loyalty + 5
+    }
+    
+    fn wag_tail() {
+        print(self.name + " wags tail happily")
+    }
+    
+    # Override parent method with additional behavior
+    fn get_info() {
+        let info = super.get_info()
+        info["breed"] = self.breed
+        info["loyalty"] = self.loyalty
+        return info
+    }
+}
+
+# Multiple inheritance example
+class Cat extends Animal {
+    fn init(name, color) {
+        super.init(name, "Feline")
+        self.color = color
+        self.independence = 80
+    }
+    
+    fn speak() {
+        print(self.name + " meows: Meow!")
+    }
+    
+    fn climb() {
+        print(self.name + " climbs gracefully")
+    }
+    
+    fn purr() {
+        print(self.name + " purrs contentedly")
+    }
+}
+
+# Abstract class example
+abstract class Vehicle {
+    fn init(brand, model) {
+        self.brand = brand
+        self.model = model
+        self.speed = 0
+    }
+    
+    # Abstract method - must be implemented by subclasses
+    abstract fn start_engine()
+    abstract fn stop_engine()
+    
+    # Concrete method available to all subclasses
+    fn accelerate(amount) {
+        self.speed = self.speed + amount
+        print(self.brand + " " + self.model + " accelerates to " + str(self.speed) + " mph")
+    }
+    
+    fn brake(amount) {
+        self.speed = max(0, self.speed - amount)
+        print(self.brand + " " + self.model + " slows to " + str(self.speed) + " mph")
+    }
+}
+
+class Car extends Vehicle {
+    fn init(brand, model, fuel_type) {
+        super.init(brand, model)
+        self.fuel_type = fuel_type
+        self.fuel_level = 100
+    }
+    
+    fn start_engine() {
+        print(self.brand + " " + self.model + " engine starts with " + self.fuel_type)
+    }
+    
+    fn stop_engine() {
+        print(self.brand + " " + self.model + " engine stops")
+    }
+    
+    fn refuel() {
+        self.fuel_level = 100
+        print(self.brand + " " + self.model + " refueled")
+    }
+}
+
+# Interface definition
+interface Flyable {
+    fn fly()
+    fn land()
+    fn get_altitude()
+}
+
+# Class implementing an interface
+class Bird extends Animal implements Flyable {
+    fn init(name, wingspan) {
+        super.init(name, "Avian")
+        self.wingspan = wingspan
+        self.altitude = 0
+    }
+    
+    fn speak() {
+        print(self.name + " chirps: Tweet!")
+    }
+    
+    # Implementing interface methods
+    fn fly() {
+        self.altitude = 100
+        print(self.name + " flies with " + str(self.wingspan) + "cm wingspan")
+    }
+    
+    fn land() {
+        self.altitude = 0
+        print(self.name + " lands gracefully")
+    }
+    
+    fn get_altitude() {
+        return self.altitude
+    }
+}
+
+# Polymorphism demonstration
+fn animal_sounds(animals) {
+    print("\n--- Animal Sounds (Polymorphism) ---")
+    for animal in animals {
+        animal.speak()  # Each animal speaks differently
+    }
+}
+
+# Static methods and class variables
+class MathUtils {
+    static let PI = 3.14159
+    static let E = 2.71828
+    
+    static fn add(a, b) {
+        return a + b
+    }
+    
+    static fn multiply(a, b) {
+        return a * b
+    }
+    
+    static fn circle_area(radius) {
+        return MathUtils.PI * radius * radius
+    }
+}
+
+# Property decorators and getters/setters
+class Rectangle {
+    fn init(width, height) {
+        self._width = width
+        self._height = height
+    }
+    
+    # Getter property
+    @property
+    fn width() {
+        return self._width
+    }
+    
+    # Setter property
+    @width.setter
+    fn width(value) {
+        if value <= 0 {
+            throw "Width must be positive"
+        }
+        self._width = value
+    }
+    
+    @property
+    fn height() {
+        return self._height
+    }
+    
+    @height.setter
+    fn height(value) {
+        if value <= 0 {
+            throw "Height must be positive"
+        }
+        self._height = value
+    }
+    
+    # Computed property
+    @property
+    fn area() {
+        return self._width * self._height
+    }
+    
+    @property
+    fn perimeter() {
+        return 2 * (self._width + self._height)
+    }
+}
+
+# Method chaining example
+class StringBuilder {
+    fn init() {
+        self.parts = []
+    }
+    
+    fn append(text) {
+        push(self.parts, str(text))
+        return self  # Return self for chaining
+    }
+    
+    fn prepend(text) {
+        insert(self.parts, 0, str(text))
+        return self
+    }
+    
+    fn clear() {
+        self.parts = []
+        return self
+    }
+    
+    fn to_string() {
+        return join(self.parts, "")
+    }
+}
+
+print("\n--- Creating Objects ---")
+
+# Create instances
+let dog = Dog("Buddy", "Golden Retriever")
+let cat = Cat("Whiskers", "Orange")
+let bird = Bird("Tweety", 15)
+
+print("\n--- Method Calls ---")
+dog.speak()
+cat.speak()
+bird.speak()
+
+print("\n--- Inheritance and Method Overriding ---")
+dog.move()
+dog.fetch("ball")
+dog.wag_tail()
+
+cat.move()
+cat.climb()
+cat.purr()
+
+bird.move()
+bird.fly()
+print("Bird altitude: " + str(bird.get_altitude()))
+bird.land()
+
+print("\n--- Object Information ---")
+print("Dog info: " + str(dog.get_info()))
+print("Cat info: " + str(cat.get_info()))
+
+# Polymorphism demonstration
+let animals = [dog, cat, bird]
+animal_sounds(animals)
+
+print("\n--- Vehicle Example ---")
+let car = Car("Toyota", "Camry", "gasoline")
+car.start_engine()
+car.accelerate(30)
+car.accelerate(20)
+car.brake(15)
+car.stop_engine()
+
+print("\n--- Static Methods ---")
+print("PI = " + str(MathUtils.PI))
+print("5 + 3 = " + str(MathUtils.add(5, 3)))
+print("Circle area (r=5) = " + str(MathUtils.circle_area(5)))
+
+print("\n--- Properties and Getters/Setters ---")
+let rect = Rectangle(10, 5)
+print("Rectangle width: " + str(rect.width))
+print("Rectangle height: " + str(rect.height))
+print("Rectangle area: " + str(rect.area))
+print("Rectangle perimeter: " + str(rect.perimeter))
+
+# Try to set invalid dimensions
+try {
+    rect.width = -5
+} catch error {
+    print("Error setting width: " + str(error))
+}
+
+print("\n--- Method Chaining ---")
+let sb = StringBuilder()
+let result = sb.append("Hello")
+              .append(" ")
+              .append("World")
+              .append("!")
+              .to_string()
+
+print("StringBuilder result: " + result)
+
+print("\n--- Advanced OOP Features ---")
+
+# Composition over inheritance
+class Engine {
+    fn init(horsepower) {
+        self.horsepower = horsepower
+        self.running = false
+    }
+    
+    fn start() {
+        self.running = true
+        print("Engine started (" + str(self.horsepower) + " HP)")
+    }
+    
+    fn stop() {
+        self.running = false
+        print("Engine stopped")
+    }
+}
+
+class CarWithComposition {
+    fn init(brand, model, engine_hp) {
+        self.brand = brand
+        self.model = model
+        self.engine = Engine(engine_hp)  # Composition
+    }
+    
+    fn start() {
+        print("Starting " + self.brand + " " + self.model)
+        self.engine.start()
+    }
+    
+    fn stop() {
+        print("Stopping " + self.brand + " " + self.model)
+        self.engine.stop()
+    }
+}
+
+let car_composed = CarWithComposition("BMW", "X5", 300)
+car_composed.start()
+car_composed.stop()
+
+print("\n🎉 Object-Oriented Programming demonstration complete!")

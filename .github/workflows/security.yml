@@ -1,0 +1,39 @@
+name: Security Audit
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    
+    - name: Install cargo-audit
+      run: cargo install cargo-audit
+    
+    - name: Run cargo-audit on compiler
+      run: |
+        cd compiler
+        cargo audit
+    
+    - name: Run cargo-audit on tools
+      run: |
+        cd tools
+        cargo audit
+    
+    - name: Run cargo-audit on runtime
+      run: |
+        cd runtime
+        cargo audit

@@ -1,0 +1,79 @@
+# Concurrency Example - Async/Await and Channels
+
+import std.async
+import std.channel
+import std.time
+
+# Async function that simulates work
+async fn fetch_data(id: int, delay: Duration) -> string
+    print("Fetching data {id}...")
+    await time.sleep(delay)
+    return "data_{id}"
+
+# Channel-based communication
+fn worker(id: int, jobs: Channel<int>, results: Channel<string>)
+    for job in jobs
+        result = "Worker {id} processed job {job}"
+        results.send(result)
+
+# Actor example
+actor Counter
+    state: int = 0
+    
+    fn increment() -> int
+        state += 1
+        return state
+    
+    fn get_value() -> int
+        return state
+
+# Main concurrent example
+async fn main()
+    # Async/await example
+    print("Starting async operations...")
+    
+    # Launch multiple async operations
+    futures = [
+        fetch_data(1, Duration.milliseconds(100)),
+        fetch_data(2, Duration.milliseconds(200)),
+        fetch_data(3, Duration.milliseconds(150))
+    ]
+    
+    # Wait for all to complete
+    results = await futures.join()
+    for result in results
+        print("Got: {result}")
+    
+    # Channel example
+    print("\nChannel communication:")
+    jobs = Channel<int>.new(capacity: 5)
+    results = Channel<string>.new(capacity: 5)
+    
+    # Start workers
+    for i in range(3)
+        spawn worker(i, jobs.clone(), results.clone())
+    
+    # Send jobs
+    for job in range(5)
+        jobs.send(job)
+    jobs.close()
+    
+    # Collect results
+    for _ in range(5)
+        result = results.receive()
+        print(result)
+    
+    # Actor example
+    print("\nActor model:")
+    counter = Counter.spawn()
+    
+    # Send messages to actor
+    for _ in range(5)
+        count = await counter.increment()
+        print("Count: {count}")
+    
+    final_value = await counter.get_value()
+    print("Final value: {final_value}")
+
+# Run the async main
+async.run(main())

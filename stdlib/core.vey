@@ -1,0 +1,525 @@
+# Veyra Standard Library - Core Module
+# Fundamental type checking, conversion, and utility functions
+
+# ===== TYPE CHECKING =====
+
+# Check if value is integer
+fn is_int(value) {
+    return value is int
+}
+
+# Check if value is float
+fn is_float(value) {
+    return value is float
+}
+
+# Check if value is string
+fn is_string(value) {
+    return value is string
+}
+
+# Check if value is boolean
+fn is_bool(value) {
+    return value is bool
+}
+
+# Check if value is array
+fn is_array(value) {
+    return value is array
+}
+
+# Check if value is None
+fn is_none(value) {
+    return value is None
+}
+
+# Get type name as string
+fn type_of(value) {
+    if is_int(value) {
+        return "int"
+    } else if is_float(value) {
+        return "float"
+    } else if is_string(value) {
+        return "string"
+    } else if is_bool(value) {
+        return "bool"
+    } else if is_array(value) {
+        return "array"
+    } else if is_none(value) {
+        return "None"
+    } else {
+        return "unknown"
+    }
+}
+
+# ===== TYPE CONVERSION =====
+
+# Convert to string
+fn to_string(value) {
+    if is_int(value) {
+        return int_to_string(value)
+    } else if is_float(value) {
+        return float_to_string(value)
+    } else if is_bool(value) {
+        if value {
+            return "true"
+        } else {
+            return "false"
+        }
+    } else if is_none(value) {
+        return "None"
+    } else if is_array(value) {
+        return array_to_string(value)
+    } else {
+        return "unknown"
+    }
+}
+
+# Convert to int
+fn to_int(value) {
+    if is_string(value) {
+        return string_to_int(value)
+    } else if is_float(value) {
+        return float_to_int(value)
+    } else if is_bool(value) {
+        if value {
+            return 1
+        } else {
+            return 0
+        }
+    } else {
+        return 0
+    }
+}
+
+# Convert to float
+fn to_float(value) {
+    if is_string(value) {
+        return string_to_float(value)
+    } else if is_int(value) {
+        return int_to_float(value)
+    } else if is_bool(value) {
+        if value {
+            return 1.0
+        } else {
+            return 0.0
+        }
+    } else {
+        return 0.0
+    }
+}
+
+# Convert to bool
+fn to_bool(value) {
+    if is_int(value) {
+        return value != 0
+    } else if is_float(value) {
+        return value != 0.0
+    } else if is_string(value) {
+        return string_length(value) > 0
+    } else if is_array(value) {
+        return array_length(value) > 0
+    } else if is_none(value) {
+        return false
+    } else {
+        return true
+    }
+}
+
+# ===== INTERNAL CONVERSION HELPERS =====
+
+fn int_to_string(n) {
+    if n == 0 {
+        return "0"
+    }
+
+    let result = ""
+    let num = n
+    let is_negative = num < 0
+
+    if is_negative {
+        num = -num
+    }
+
+    while num > 0 {
+        let digit = num % 10
+        result = char_from_int(digit + 48) + result
+        num = num / 10
+    }
+
+    if is_negative {
+        result = "-" + result
+    }
+
+    return result
+}
+
+fn float_to_string(f) {
+    let int_part = float_to_int(f)
+    let frac_part = f - int_to_float(int_part)
+
+    let int_str = int_to_string(int_part)
+    if frac_part == 0.0 {
+        return int_str
+    }
+
+    let frac_str = ""
+    let frac = frac_part
+    let precision = 6
+
+    while precision > 0 and frac != 0.0 {
+        frac = frac * 10.0
+        let digit = float_to_int(frac)
+        frac_str = frac_str + char_from_int(digit + 48)
+        frac = frac - int_to_float(digit)
+        precision = precision - 1
+    }
+
+    return int_str + "." + frac_str
+}
+
+fn string_to_int(s) {
+    if string_length(s) == 0 {
+        return 0
+    }
+
+    let result = 0
+    let i = 0
+    let is_negative = string_char_at(s, 0) == '-'
+
+    if is_negative {
+        i = 1
+    }
+
+    while i < string_length(s) {
+        let c = string_char_at(s, i)
+        if c < '0' or c > '9' {
+            break
+        }
+        result = result * 10 + (char_to_int(c) - 48)
+        i = i + 1
+    }
+
+    if is_negative {
+        result = -result
+    }
+
+    return result
+}
+
+fn string_to_float(s) {
+    let dot_index = string_index_of(s, ".")
+    if dot_index == -1 {
+        return int_to_float(string_to_int(s))
+    }
+
+    let int_part = string_substring(s, 0, dot_index)
+    let frac_part = string_substring(s, dot_index + 1, string_length(s))
+
+    let int_val = int_to_float(string_to_int(int_part))
+    let frac_val = int_to_float(string_to_int(frac_part)) / pow(10.0, string_length(frac_part))
+
+    if string_char_at(s, 0) == '-' {
+        return int_val - frac_val
+    } else {
+        return int_val + frac_val
+    }
+}
+
+fn array_to_string(arr) {
+    let result = "["
+    let i = 0
+    let length = array_length(arr)
+
+    while i < length {
+        if i > 0 {
+            result = result + ", "
+        }
+        result = result + to_string(arr[i])
+        i = i + 1
+    }
+
+    result = result + "]"
+    return result
+}
+
+# ===== ARRAY UTILITIES =====
+
+# Get array length
+fn array_length(arr) {
+    return len(arr)
+}
+
+# Check if array is empty
+fn array_is_empty(arr) {
+    return array_length(arr) == 0
+}
+
+# Get first element
+fn array_first(arr) {
+    if array_is_empty(arr) {
+        return None
+    }
+    return arr[0]
+}
+
+# Get last element
+fn array_last(arr) {
+    let length = array_length(arr)
+    if length == 0 {
+        return None
+    }
+    return arr[length - 1]
+}
+
+# Check if array contains element
+fn array_contains(arr, element) {
+    let i = 0
+    let length = array_length(arr)
+
+    while i < length {
+        if arr[i] == element {
+            return true
+        }
+        i = i + 1
+    }
+
+    return false
+}
+
+# Find index of element
+fn array_index_of(arr, element) {
+    let i = 0
+    let length = array_length(arr)
+
+    while i < length {
+        if arr[i] == element {
+            return i
+        }
+        i = i + 1
+    }
+
+    return -1
+}
+
+# Count occurrences of element
+fn array_count(arr, element) {
+    let count = 0
+    let i = 0
+    let length = array_length(arr)
+
+    while i < length {
+        if arr[i] == element {
+            count = count + 1
+        }
+        i = i + 1
+    }
+
+    return count
+}
+
+# ===== UTILITY FUNCTIONS =====
+
+# Get minimum of two values
+fn min(a, b) {
+    if a < b {
+        return a
+    } else {
+        return b
+    }
+}
+
+# Get maximum of two values
+fn max(a, b) {
+    if a > b {
+        return a
+    } else {
+        return b
+    }
+}
+
+# Clamp value between min and max
+fn clamp(value, min_val, max_val) {
+    if value < min_val {
+        return min_val
+    } else if value > max_val {
+        return max_val
+    } else {
+        return value
+    }
+}
+
+# Swap two values
+fn swap(a, b) {
+    return [b, a]
+}
+
+# ===== CHARACTER UTILITIES =====
+
+# Convert character to integer
+fn char_to_int(c) {
+    return c as int
+}
+
+# Convert integer to character
+fn char_from_int(i) {
+    return i as char
+}
+
+# ===== ERROR HANDLING =====
+
+# Create error result
+fn error(message) {
+    return ["error", message]
+}
+
+# Check if result is error
+fn is_error(result) {
+    return is_array(result) and array_length(result) == 2 and result[0] == "error"
+}
+
+# Get error message
+fn error_message(err) {
+    if is_error(err) {
+        return err[1]
+    }
+    return None
+}
+
+# ===== ASSERTIONS =====
+
+# Assert condition is true
+fn assert(condition, message) {
+    if not condition {
+        # In a real implementation, this would throw an exception
+        return error(message)
+    }
+    return None
+}
+
+# Assert values are equal
+fn assert_equal(a, b, message) {
+    return assert(a == b, message)
+}
+
+# ===== MEMORY UTILITIES =====
+
+# Deep copy of value
+fn deep_copy(value) {
+    if is_array(value) {
+        let result = []
+        let i = 0
+        let length = array_length(value)
+
+        while i < length {
+            result = array_push(result, deep_copy(value[i]))
+            i = i + 1
+        }
+
+        return result
+    } else {
+        return value
+    }
+}
+
+# ===== ARRAY MODIFICATION =====
+
+# Push element to array
+fn array_push(arr, element) {
+    return arr + [element]
+}
+
+# Pop element from array
+fn array_pop(arr) {
+    let length = array_length(arr)
+    if length == 0 {
+        return [arr, None]
+    }
+
+    let last = arr[length - 1]
+    let new_arr = array_slice(arr, 0, length - 1)
+    return [new_arr, last]
+}
+
+# Insert element at index
+fn array_insert(arr, index, element) {
+    let length = array_length(arr)
+    if index < 0 or index > length {
+        return arr
+    }
+
+    let before = array_slice(arr, 0, index)
+    let after = array_slice(arr, index, length)
+    return before + [element] + after
+}
+
+# Remove element at index
+fn array_remove(arr, index) {
+    let length = array_length(arr)
+    if index < 0 or index >= length {
+        return arr
+    }
+
+    let before = array_slice(arr, 0, index)
+    let after = array_slice(arr, index + 1, length)
+    return before + after
+}
+
+# Get slice of array
+fn array_slice(arr, start, end) {
+    let length = array_length(arr)
+    let actual_start = max(0, min(start, length))
+    let actual_end = max(actual_start, min(end, length))
+
+    let result = []
+    let i = actual_start
+
+    while i < actual_end {
+        result = array_push(result, arr[i])
+        i = i + 1
+    }
+
+    return result
+}
+
+# Reverse array
+fn array_reverse(arr) {
+    let length = array_length(arr)
+    let result = []
+    let i = length - 1
+
+    while i >= 0 {
+        result = array_push(result, arr[i])
+        i = i - 1
+    }
+
+    return result
+}
+
+# ===== MATHEMATICAL UTILITIES =====
+
+# Power function
+fn pow(base, exponent) {
+    if exponent == 0 {
+        return 1
+    }
+
+    let result = 1
+    let i = 0
+
+    while i < exponent {
+        result = result * base
+        i = i + 1
+    }
+
+    return result
+}
+
+# Absolute value
+fn abs(value) {
+    if value < 0 {
+        return -value
+    } else {
+        return value
+    }
+}

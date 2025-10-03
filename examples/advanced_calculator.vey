@@ -1,0 +1,92 @@
+# Advanced Veyra Example - Calculator Application
+# Demonstrates function organization and mathematical operations
+
+import std.math
+
+print("=== Veyra Advanced Calculator ===")
+
+# Calculator functions
+fn calculate_circle_area(radius) {
+    let area = PI * pow(radius, 2)
+    print("Circle area (radius " + str(radius) + "): " + str(area))
+    return area
+}
+
+fn calculate_distance(x1, y1, x2, y2) {
+    let dx = x2 - x1
+    let dy = y2 - y1
+    let distance = sqrt(dx * dx + dy * dy)
+    print("Distance between (" + str(x1) + "," + str(y1) + ") and (" + str(x2) + "," + str(y2) + "): " + str(distance))
+    return distance
+}
+
+fn fibonacci_sequence(n) {
+    print("Fibonacci sequence up to " + str(n) + ":")
+    let mut a = 0
+    let mut b = 1
+    let mut i = 0
+    
+    while i < n {
+        print(str(a))
+        let temp = a + b
+        a = b
+        b = temp
+        i = i + 1
+    }
+}
+
+fn is_prime(n) {
+    if n <= 1 {
+        return false
+    }
+    
+    let mut i = 2
+    while i * i <= n {
+        if n % i == 0 {
+            return false
+        }
+        i = i + 1
+    }
+    
+    return true
+}
+
+fn find_primes_up_to(limit) {
+    print("Prime numbers up to " + str(limit) + ":")
+    let mut num = 2
+    
+    while num <= limit {
+        if is_prime(num) {
+            print(str(num))
+        }
+        num = num + 1
+    }
+}
+
+# Mathematical operations
+print("\n--- Basic Constants ---")
+print("PI = " + str(PI))
+print("E = " + str(E))
+
+print("\n--- Circle Calculations ---")
+calculate_circle_area(5)
+calculate_circle_area(10)
+
+print("\n--- Distance Calculations ---")
+calculate_distance(0, 0, 3, 4)
+calculate_distance(1, 1, 4, 5)
+
+print("\n--- Number Theory ---")
+fibonacci_sequence(10)
+
+print("\n--- Prime Numbers ---")
+find_primes_up_to(20)
+
+print("\n--- Advanced Math ---")
+print("Square root of 144: " + str(sqrt(144)))
+print("2 to the power of 10: " + str(pow(2, 10)))
+print("Absolute value of -42: " + str(abs(-42)))
+print("Maximum of 15 and 23: " + str(max(15, 23)))
+print("Minimum of 8 and 12: " + str(min(8, 12)))
+
+print("\n=== Calculator Complete ===")
