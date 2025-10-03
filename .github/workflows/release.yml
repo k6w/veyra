@@ -196,16 +196,15 @@ jobs:
           const artifactName = '${{ matrix.artifact_name }}.${{ matrix.archive_ext }}';
           const contentType = '${{ matrix.archive_ext }}' === 'zip' ? 'application/zip' : 'application/gzip';
           
+          const stats = fs.statSync(artifactPath);
+          const fileData = fs.readFileSync(artifactPath);
+          
           const uploadAsset = await github.rest.repos.uploadReleaseAsset({
             owner: context.repo.owner,
             repo: context.repo.repo,
             release_id: ${{ needs.create-release.outputs.release_id }},
             name: artifactName,
-            data: fs.readFileSync(artifactPath),
-            headers: {
-              'content-type': contentType,
-              'content-length': fs.statSync(artifactPath).size
-            }
+            data: fileData
           });
           
           console.log(`Uploaded ${artifactName} successfully`);
@@ -247,16 +246,14 @@ jobs:
           const artifactPath = path.join(process.cwd(), 'tools', 'vscode_extension', 'veyra-lang-${{ needs.create-release.outputs.version }}.vsix');
           const artifactName = 'veyra-lang-${{ needs.create-release.outputs.version }}.vsix';
           
+          const fileData = fs.readFileSync(artifactPath);
+          
           const uploadAsset = await github.rest.repos.uploadReleaseAsset({
             owner: context.repo.owner,
             repo: context.repo.repo,
             release_id: ${{ needs.create-release.outputs.release_id }},
             name: artifactName,
-            data: fs.readFileSync(artifactPath),
-            headers: {
-              'content-type': 'application/zip',
-              'content-length': fs.statSync(artifactPath).size
-            }
+            data: fileData
           });
           
           console.log(`Uploaded VS Code extension ${artifactName} successfully`);
