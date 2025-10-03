@@ -8,6 +8,10 @@ on:
         required: true
         default: '0.1.0-test'
 
+permissions:
+  contents: read
+  actions: write
+
 env:
   CARGO_TERM_COLOR: always
 
