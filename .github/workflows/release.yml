@@ -87,10 +87,11 @@ jobs:
       if: matrix.os != 'windows-latest'
       run: |
         mkdir -p release/bin
-        cp compiler/target/release/veyra release/bin/ || true
+        cp compiler/target/release/veyc release/bin/ || true
         cp tools/target/release/veyra-repl release/bin/ || true
         cp tools/target/release/veyra-dbg release/bin/ || true
         cp tools/target/release/veyra-lint release/bin/ || true
+        cp tools/target/release/veyra-fmt release/bin/ || true
         cp tools/target/release/veyra-lsp release/bin/ || true
         cp tools/target/release/veyra-pkg release/bin/ || true
         cp README.md release/
@@ -101,10 +102,11 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         New-Item -ItemType Directory -Force -Path release\bin
-        Copy-Item compiler\target\release\veyra.exe release\bin\ -ErrorAction SilentlyContinue
+        Copy-Item compiler\target\release\veyc.exe release\bin\ -ErrorAction SilentlyContinue
         Copy-Item tools\target\release\veyra-repl.exe release\bin\ -ErrorAction SilentlyContinue
         Copy-Item tools\target\release\veyra-dbg.exe release\bin\ -ErrorAction SilentlyContinue
         Copy-Item tools\target\release\veyra-lint.exe release\bin\ -ErrorAction SilentlyContinue
+        Copy-Item tools\target\release\veyra-fmt.exe release\bin\ -ErrorAction SilentlyContinue
         Copy-Item tools\target\release\veyra-lsp.exe release\bin\ -ErrorAction SilentlyContinue
         Copy-Item tools\target\release\veyra-pkg.exe release\bin\ -ErrorAction SilentlyContinue
         Copy-Item README.md release\
