@@ -57,15 +57,15 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             artifact_name: veyra-linux-x64
+            archive_ext: tar.gz
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact_name: veyra-windows-x64
+            archive_ext: zip
           - os: macos-latest
             target: x86_64-apple-darwin
             artifact_name: veyra-macos-x64
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            artifact_name: veyra-macos-arm64
+            archive_ext: tar.gz
     
     steps:
     - uses: actions/checkout@v4
@@ -73,29 +73,26 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
     
-    - name: Add build target
-      run: rustup target add ${{ matrix.target }}
-    
     - name: Build Compiler
       run: |
         cd compiler
-        cargo build --release --target ${{ matrix.target }}
+        cargo build --release
     
     - name: Build Tools
       run: |
         cd tools
-        cargo build --release --target ${{ matrix.target }}
+        cargo build --release
     
     - name: Create Release Directory (Unix)
       if: matrix.os != 'windows-latest'
       run: |
         mkdir -p release/bin
-        cp target/${{ matrix.target }}/release/veyra release/bin/ || true
-        cp target/${{ matrix.target }}/release/veyra-repl release/bin/ || true
-        cp target/${{ matrix.target }}/release/veyra-dbg release/bin/ || true
-        cp target/${{ matrix.target }}/release/veyra-lint release/bin/ || true
-        cp target/${{ matrix.target }}/release/veyra-lsp release/bin/ || true
-        cp target/${{ matrix.target }}/release/veyra-pkg release/bin/ || true
+        cp compiler/target/release/veyra release/bin/ || true
+        cp tools/target/release/veyra-repl release/bin/ || true
+        cp tools/target/release/veyra-dbg release/bin/ || true
+        cp tools/target/release/veyra-lint release/bin/ || true
+        cp tools/target/release/veyra-lsp release/bin/ || true
+        cp tools/target/release/veyra-pkg release/bin/ || true
         cp README.md release/
         cp LICENSE release/
         cp QUICK_START.md release/
@@ -104,12 +101,12 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         New-Item -ItemType Directory -Force -Path release\bin
-        Copy-Item target\${{ matrix.target }}\release\veyra.exe release\bin\ -ErrorAction SilentlyContinue
-        Copy-Item target\${{ matrix.target }}\release\veyra-repl.exe release\bin\ -ErrorAction SilentlyContinue
-        Copy-Item target\${{ matrix.target }}\release\veyra-dbg.exe release\bin\ -ErrorAction SilentlyContinue
-        Copy-Item target\${{ matrix.target }}\release\veyra-lint.exe release\bin\ -ErrorAction SilentlyContinue
-        Copy-Item target\${{ matrix.target }}\release\veyra-lsp.exe release\bin\ -ErrorAction SilentlyContinue
-        Copy-Item target\${{ matrix.target }}\release\veyra-pkg.exe release\bin\ -ErrorAction SilentlyContinue
+        Copy-Item compiler\target\release\veyra.exe release\bin\ -ErrorAction SilentlyContinue
+        Copy-Item tools\target\release\veyra-repl.exe release\bin\ -ErrorAction SilentlyContinue
+        Copy-Item tools\target\release\veyra-dbg.exe release\bin\ -ErrorAction SilentlyContinue
+        Copy-Item tools\target\release\veyra-lint.exe release\bin\ -ErrorAction SilentlyContinue
+        Copy-Item tools\target\release\veyra-lsp.exe release\bin\ -ErrorAction SilentlyContinue
+        Copy-Item tools\target\release\veyra-pkg.exe release\bin\ -ErrorAction SilentlyContinue
         Copy-Item README.md release\
         Copy-Item LICENSE release\
         Copy-Item QUICK_START.md release\
@@ -126,24 +123,12 @@ jobs:
         cd release
         Compress-Archive -Path * -DestinationPath ..\${{ matrix.artifact_name }}.zip
     
-    - name: Upload Release Asset (Unix)
-      if: matrix.os != 'windows-latest'
+    - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./${{ matrix.artifact_name }}.tar.gz
-        asset_name: ${{ matrix.artifact_name }}.tar.gz
-        asset_content_type: application/gzip
-    
-    - name: Upload Release Asset (Windows)
-      if: matrix.os == 'windows-latest'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./${{ matrix.artifact_name }}.zip
-        asset_name: ${{ matrix.artifact_name }}.zip
-        asset_content_type: application/zip
+        asset_path: ./${{ matrix.artifact_name }}.${{ matrix.archive_ext }}
+        asset_name: ${{ matrix.artifact_name }}.${{ matrix.archive_ext }}
+        asset_content_type: ${{ matrix.archive_ext == 'zip' && 'application/zip' || 'application/gzip' }}

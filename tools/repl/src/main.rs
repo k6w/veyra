@@ -7,9 +7,9 @@ use std::path::PathBuf;
 
 // Import from the main compiler
 use veyra_compiler::{
+    interpreter::{Interpreter, Value},
     lexer::Lexer,
     parser::Parser as VeyraParser,
-    interpreter::{Interpreter, Value},
 };
 
 #[derive(Parser)]
@@ -20,11 +20,11 @@ struct Cli {
     /// Show version information
     #[arg(short, long)]
     version: bool,
-    
+
     /// Enable verbose output
     #[arg(short, long)]
     verbose: bool,
-    
+
     /// Load and execute a startup file
     #[arg(short, long)]
     startup: Option<PathBuf>,
@@ -44,16 +44,16 @@ impl ReplState {
             verbose,
         }
     }
-    
+
     fn execute(&mut self, input: &str) -> Result<Option<Value>> {
         // Skip empty input
         if input.trim().is_empty() {
             return Ok(None);
         }
-        
+
         // Add to history
         self.history.push(input.to_string());
-        
+
         // Tokenize
         let mut lexer = Lexer::new(input);
         let tokens = match lexer.tokenize() {
@@ -63,11 +63,11 @@ impl ReplState {
                 return Ok(None);
             }
         };
-        
+
         if self.verbose {
             println!("{}: {:?}", "Tokens".blue(), tokens);
         }
-        
+
         // Parse
         let mut parser = VeyraParser::new(tokens);
         let ast = match parser.parse() {
@@ -77,11 +77,11 @@ impl ReplState {
                 return Ok(None);
             }
         };
-        
+
         if self.verbose {
             println!("{}: {:#?}", "AST".blue(), ast);
         }
-        
+
         // Execute
         match self.interpreter.interpret(&ast) {
             Ok(value) => Ok(Some(value)),
@@ -91,16 +91,16 @@ impl ReplState {
             }
         }
     }
-    
+
     fn load_startup_file(&mut self, path: &PathBuf) -> Result<()> {
         let content = std::fs::read_to_string(path)?;
         println!("{} {}", "Loading startup file:".green(), path.display());
-        
+
         match self.execute(&content) {
             Ok(_) => println!("{}", "Startup file loaded successfully".green()),
             Err(e) => eprintln!("{}: {}", "Error loading startup file".red(), e),
         }
-        
+
         Ok(())
     }
 }
@@ -108,7 +108,10 @@ impl ReplState {
 fn print_welcome() {
     println!("{}", "=== Veyra Interactive REPL ===".cyan().bold());
     println!("{}", "Veyra Programming Language v1.0".cyan());
-    println!("{}", "Type 'help' for help, 'exit' or Ctrl+C to quit".yellow());
+    println!(
+        "{}",
+        "Type 'help' for help, 'exit' or Ctrl+C to quit".yellow()
+    );
     println!();
 }
 
@@ -124,7 +127,9 @@ fn print_help() {
     println!("{}", "Examples:".yellow().bold());
     println!("  let x = 42");
     println!("  print(\"Hello, World!\")");
-    println!("  fn fibonacci(n) {{ if n <= 1 {{ return n }} return fibonacci(n-1) + fibonacci(n-2) }}");
+    println!(
+        "  fn fibonacci(n) {{ if n <= 1 {{ return n }} return fibonacci(n-1) + fibonacci(n-2) }}"
+    );
     println!("  fibonacci(10)");
     println!();
 }
@@ -143,41 +148,40 @@ fn clear_screen() {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    
+
     if cli.version {
         println!("Veyra REPL v0.1.0");
         return Ok(());
     }
-    
+
     let mut state = ReplState::new(cli.verbose);
-    
+
     // Load startup file if provided
     if let Some(startup_path) = &cli.startup {
         state.load_startup_file(startup_path)?;
     }
-    
+
     print_welcome();
-    
+
     let mut rl = DefaultEditor::new()?;
-    
+
     // Set up history file
-    let history_file = dirs::home_dir()
-        .map(|mut path| {
-            path.push(".veyra_history");
-            path
-        });
-    
+    let history_file = dirs::home_dir().map(|mut path| {
+        path.push(".veyra_history");
+        path
+    });
+
     if let Some(ref history_path) = history_file {
         let _ = rl.load_history(history_path);
     }
-    
+
     loop {
         let prompt = format!("{} ", "veyra>".green().bold());
-        
+
         match rl.readline(&prompt) {
             Ok(line) => {
                 let input = line.trim();
-                
+
                 // Handle special REPL commands
                 match input {
                     "help" => {
@@ -213,10 +217,10 @@ fn main() -> Result<()> {
                     }
                     _ => {}
                 }
-                
+
                 // Add to readline history
                 rl.add_history_entry(&line)?;
-                
+
                 // Execute the input
                 match state.execute(input) {
                     Ok(Some(value)) => {
@@ -244,12 +248,12 @@ fn main() -> Result<()> {
             }
         }
     }
-    
+
     // Save history
     if let Some(history_path) = history_file {
         let _ = rl.save_history(&history_path);
     }
-    
+
     Ok(())
 }
 
@@ -266,16 +270,15 @@ fn format_value(value: &Value) -> String {
             format!("[{}]", items.join(", "))
         }
         Value::Dictionary(map) => {
-            let mut pairs: Vec<String> = map.iter()
+            let mut pairs: Vec<String> = map
+                .iter()
                 .map(|(k, v)| format!("\"{}\": {}", k, format_value(v)))
                 .collect();
             pairs.sort();
             format!("{{{}}}", pairs.join(", "))
         }
         Value::Set(set) => {
-            let mut elements: Vec<String> = set.iter()
-                .map(|s| format!("\"{}\"", s))
-                .collect();
+            let mut elements: Vec<String> = set.iter().map(|s| format!("\"{}\"", s)).collect();
             elements.sort();
             format!("{{{}}}", elements.join(", "))
         }

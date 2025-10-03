@@ -138,17 +138,17 @@ pub struct Assignment {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum AssignmentOperator {
-    Assign,      // =
-    AddAssign,   // +=
-    SubAssign,   // -=
-    MulAssign,   // *=
-    DivAssign,   // /=
-    ModAssign,   // %=
-    BitwiseAndAssign,  // &=
-    BitwiseOrAssign,   // |=
-    BitwiseXorAssign,  // ^=
-    LeftShiftAssign,   // <<=
-    RightShiftAssign,  // >>=
+    Assign,           // =
+    AddAssign,        // +=
+    SubAssign,        // -=
+    MulAssign,        // *=
+    DivAssign,        // /=
+    ModAssign,        // %=
+    BitwiseAndAssign, // &=
+    BitwiseOrAssign,  // |=
+    BitwiseXorAssign, // ^=
+    LeftShiftAssign,  // <<=
+    RightShiftAssign, // >>=
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -240,31 +240,31 @@ pub struct BinaryExpression {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum BinaryOperator {
     // Arithmetic
-    Add,        // +
-    Subtract,   // -
-    Multiply,   // *
-    Divide,     // /
-    Modulo,     // %
-    Power,      // **
-    
+    Add,      // +
+    Subtract, // -
+    Multiply, // *
+    Divide,   // /
+    Modulo,   // %
+    Power,    // **
+
     // Comparison
-    Equal,      // ==
-    NotEqual,   // !=
-    Less,       // <
-    LessEqual,  // <=
-    Greater,    // >
+    Equal,        // ==
+    NotEqual,     // !=
+    Less,         // <
+    LessEqual,    // <=
+    Greater,      // >
     GreaterEqual, // >=
-    
+
     // Logical
-    And,        // and
-    Or,         // or
-    
+    And, // and
+    Or,  // or
+
     // Bitwise
-    BitwiseAnd,    // &
-    BitwiseOr,     // |
-    BitwiseXor,    // ^
-    LeftShift,     // <<
-    RightShift,    // >>
+    BitwiseAnd, // &
+    BitwiseOr,  // |
+    BitwiseXor, // ^
+    LeftShift,  // <<
+    RightShift, // >>
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -275,12 +275,12 @@ pub struct UnaryExpression {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum UnaryOperator {
-    Minus,      // -
-    Not,        // not, !
-    BitwiseNot, // ~
-    Reference,  // &
+    Minus,            // -
+    Not,              // not, !
+    BitwiseNot,       // ~
+    Reference,        // &
     MutableReference, // &mut
-    Dereference, // *
+    Dereference,      // *
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

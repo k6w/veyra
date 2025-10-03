@@ -6,9 +6,9 @@ use walkdir::WalkDir;
 
 // Import from the main compiler
 use veyra_compiler::{
+    ast::*,
     lexer::{Lexer, Token, TokenType},
     parser::Parser as VeyraParser,
-    ast::*,
 };
 
 #[derive(Parser)]
@@ -19,31 +19,31 @@ struct Cli {
     /// Files or directories to format
     #[arg(value_name = "PATH")]
     paths: Vec<PathBuf>,
-    
+
     /// Format files in place
     #[arg(short, long)]
     write: bool,
-    
+
     /// Check if files are already formatted (exit code 1 if not)
     #[arg(short, long)]
     check: bool,
-    
+
     /// Show diff of formatting changes
     #[arg(short, long)]
     diff: bool,
-    
+
     /// Recursively format directories
     #[arg(short, long)]
     recursive: bool,
-    
+
     /// Verbose output
     #[arg(short, long)]
     verbose: bool,
-    
+
     /// Indentation size (default: 4 spaces)
     #[arg(long, default_value = "4")]
     indent: usize,
-    
+
     /// Maximum line length (default: 100)
     #[arg(long, default_value = "100")]
     max_line_length: usize,
@@ -79,26 +79,26 @@ impl Formatter {
             output: String::new(),
         }
     }
-    
+
     fn format_program(&mut self, program: &Program) -> String {
         self.output.clear();
         self.current_indent = 0;
-        
+
         for (i, stmt) in program.statements.iter().enumerate() {
             if i > 0 {
                 self.output.push('\n');
             }
             self.format_statement(stmt);
         }
-        
+
         // Ensure file ends with newline
         if !self.output.ends_with('\n') {
             self.output.push('\n');
         }
-        
+
         self.output.clone()
     }
-    
+
     fn format_statement(&mut self, stmt: &Statement) {
         match stmt {
             Statement::Let { name, value } => {
@@ -114,7 +114,11 @@ impl Formatter {
                 self.output.push_str(" = ");
                 self.format_expression(value);
             }
-            Statement::CompoundAssignment { name, operator, value } => {
+            Statement::CompoundAssignment {
+                name,
+                operator,
+                value,
+            } => {
                 self.write_indent();
                 self.output.push_str(name);
                 self.output.push(' ');
@@ -126,20 +130,25 @@ impl Formatter {
                 self.write_indent();
                 self.format_expression(expr);
             }
-            Statement::If { condition, then_branch, elif_branches, else_branch } => {
+            Statement::If {
+                condition,
+                then_branch,
+                elif_branches,
+                else_branch,
+            } => {
                 self.write_indent();
                 self.output.push_str("if ");
                 self.format_expression(condition);
                 self.output.push_str(" {");
                 self.format_block(then_branch);
-                
+
                 for (elif_cond, elif_body) in elif_branches {
                     self.output.push_str(" elif ");
                     self.format_expression(elif_cond);
                     self.output.push_str(" {");
                     self.format_block(elif_body);
                 }
-                
+
                 if let Some(else_body) = else_branch {
                     self.output.push_str(" else {");
                     self.format_block(else_body);
@@ -152,7 +161,11 @@ impl Formatter {
                 self.output.push_str(" {");
                 self.format_block(body);
             }
-            Statement::For { variable, iterable, body } => {
+            Statement::For {
+                variable,
+                iterable,
+                body,
+            } => {
                 self.write_indent();
                 self.output.push_str("for ");
                 self.output.push_str(variable);
@@ -198,7 +211,7 @@ impl Formatter {
             }
         }
     }
-    
+
     fn format_block(&mut self, statements: &[Statement]) {
         if statements.is_empty() {
             self.output.push_str("\n");
@@ -206,42 +219,44 @@ impl Formatter {
             self.output.push('}');
             return;
         }
-        
+
         self.output.push('\n');
         self.current_indent += 1;
-        
+
         for (i, stmt) in statements.iter().enumerate() {
             if i > 0 {
                 self.output.push('\n');
             }
             self.format_statement(stmt);
         }
-        
+
         self.output.push('\n');
         self.current_indent -= 1;
         self.write_indent();
         self.output.push('}');
     }
-    
+
     fn format_expression(&mut self, expr: &Expression) {
         match expr {
-            Expression::Literal(lit) => {
-                match lit {
-                    Literal::Int(n) => self.output.push_str(&n.to_string()),
-                    Literal::Float(f) => self.output.push_str(&f.to_string()),
-                    Literal::String(s) => {
-                        self.output.push('"');
-                        self.output.push_str(s);
-                        self.output.push('"');
-                    }
-                    Literal::Bool(b) => self.output.push_str(&b.to_string()),
-                    Literal::None => self.output.push_str("None"),
+            Expression::Literal(lit) => match lit {
+                Literal::Int(n) => self.output.push_str(&n.to_string()),
+                Literal::Float(f) => self.output.push_str(&f.to_string()),
+                Literal::String(s) => {
+                    self.output.push('"');
+                    self.output.push_str(s);
+                    self.output.push('"');
                 }
-            }
+                Literal::Bool(b) => self.output.push_str(&b.to_string()),
+                Literal::None => self.output.push_str("None"),
+            },
             Expression::Identifier(name) => {
                 self.output.push_str(name);
             }
-            Expression::Binary { left, operator, right } => {
+            Expression::Binary {
+                left,
+                operator,
+                right,
+            } => {
                 self.format_expression(left);
                 self.output.push(' ');
                 self.output.push_str(operator);
@@ -281,7 +296,7 @@ impl Formatter {
             }
         }
     }
-    
+
     fn write_indent(&mut self) {
         if self.config.use_spaces {
             for _ in 0..(self.current_indent * self.config.indent_size) {
@@ -297,17 +312,19 @@ impl Formatter {
 
 fn format_file(path: &Path, config: &FormatterConfig) -> Result<String> {
     let content = fs::read_to_string(path)?;
-    
+
     // Tokenize
     let mut lexer = Lexer::new(&content);
-    let tokens = lexer.tokenize()
+    let tokens = lexer
+        .tokenize()
         .map_err(|e| anyhow!("Syntax error in {}: {}", path.display(), e))?;
-    
+
     // Parse
     let mut parser = VeyraParser::new(tokens);
-    let ast = parser.parse()
+    let ast = parser
+        .parse()
         .map_err(|e| anyhow!("Parse error in {}: {}", path.display(), e))?;
-    
+
     // Format
     let mut formatter = Formatter::new(config.clone());
     Ok(formatter.format_program(&ast))
@@ -315,7 +332,7 @@ fn format_file(path: &Path, config: &FormatterConfig) -> Result<String> {
 
 fn collect_veyra_files(paths: &[PathBuf], recursive: bool) -> Result<Vec<PathBuf>> {
     let mut files = Vec::new();
-    
+
     for path in paths {
         if path.is_file() {
             if path.extension().and_then(|s| s.to_str()) == Some("vey") {
@@ -346,40 +363,40 @@ fn collect_veyra_files(paths: &[PathBuf], recursive: bool) -> Result<Vec<PathBuf
             }
         }
     }
-    
+
     Ok(files)
 }
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    
+
     let config = FormatterConfig {
         indent_size: cli.indent,
         max_line_length: cli.max_line_length,
         use_spaces: true,
     };
-    
+
     // If no paths specified, use current directory
     let paths = if cli.paths.is_empty() {
         vec![PathBuf::from(".")]
     } else {
         cli.paths
     };
-    
+
     let files = collect_veyra_files(&paths, cli.recursive)?;
-    
+
     if files.is_empty() {
         println!("No .vey files found");
         return Ok(());
     }
-    
+
     let mut needs_formatting = false;
-    
+
     for file in files {
         if cli.verbose {
             println!("Processing: {}", file.display());
         }
-        
+
         let original_content = fs::read_to_string(&file)?;
         let formatted_content = match format_file(&file, &config) {
             Ok(content) => content,
@@ -388,10 +405,10 @@ fn main() -> Result<()> {
                 continue;
             }
         };
-        
+
         if original_content != formatted_content {
             needs_formatting = true;
-            
+
             if cli.check {
                 println!("File needs formatting: {}", file.display());
             } else if cli.diff {
@@ -400,7 +417,7 @@ fn main() -> Result<()> {
                 // Simple line-by-line diff
                 let orig_lines: Vec<&str> = original_content.lines().collect();
                 let fmt_lines: Vec<&str> = formatted_content.lines().collect();
-                
+
                 for (i, (orig, fmt)) in orig_lines.iter().zip(fmt_lines.iter()).enumerate() {
                     if orig != fmt {
                         println!("@@ -{} +{} @@", i + 1, i + 1);
@@ -418,10 +435,10 @@ fn main() -> Result<()> {
             println!("Already formatted: {}", file.display());
         }
     }
-    
+
     if cli.check && needs_formatting {
         std::process::exit(1);
     }
-    
+
     Ok(())
 }

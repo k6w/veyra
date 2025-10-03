@@ -9,27 +9,23 @@ pub enum VeyraError {
         column: usize,
         message: String,
     },
-    
+
     #[error("Parser error at line {line}, column {column}: {message}")]
     ParseError {
         line: usize,
         column: usize,
         message: String,
     },
-    
+
     #[error("Type Error: {message}")]
-    TypeError {
-        message: String,
-    },
-    
+    TypeError { message: String },
+
     #[error("Runtime Error: {message}")]
-    RuntimeError {
-        message: String,
-    },
-    
+    RuntimeError { message: String },
+
     #[error("IO Error: {0}")]
     IoError(String),
-    
+
     #[error("Compiler Error: {0}")]
     InternalError(String),
 }
@@ -44,7 +40,7 @@ impl VeyraError {
             message: message.into(),
         }
     }
-    
+
     pub fn parse_error(line: usize, column: usize, message: impl Into<String>) -> Self {
         VeyraError::ParseError {
             line,
@@ -52,14 +48,14 @@ impl VeyraError {
             message: message.into(),
         }
     }
-    
+
     #[allow(dead_code)]
     pub fn type_error(message: impl Into<String>) -> Self {
         VeyraError::TypeError {
             message: message.into(),
         }
     }
-    
+
     pub fn runtime_error(message: impl Into<String>) -> Self {
         VeyraError::RuntimeError {
             message: message.into(),

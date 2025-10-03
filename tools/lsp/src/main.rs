@@ -10,10 +10,10 @@ use tower_lsp::{Client, LanguageServer, LspService, Server};
 
 // Import from the main compiler
 use veyra_compiler::{
-    lexer::{Lexer, Token, TokenKind},
-    parser::Parser as VeyraParser,
     ast::*,
     error::VeyraError,
+    lexer::{Lexer, Token, TokenKind},
+    parser::Parser as VeyraParser,
 };
 
 #[derive(Debug)]
@@ -40,14 +40,16 @@ impl DocumentInfo {
         info.analyze();
         info
     }
-    
+
     fn update(&mut self, changes: Vec<TextDocumentContentChangeEvent>, version: i32) {
         self.version = version;
-        
+
         for change in changes {
             if let Some(range) = change.range {
-                let start_idx = self.rope.line_to_char(range.start.line as usize) + range.start.character as usize;
-                let end_idx = self.rope.line_to_char(range.end.line as usize) + range.end.character as usize;
+                let start_idx = self.rope.line_to_char(range.start.line as usize)
+                    + range.start.character as usize;
+                let end_idx =
+                    self.rope.line_to_char(range.end.line as usize) + range.end.character as usize;
                 self.rope.remove(start_idx..end_idx);
                 self.rope.insert(start_idx, &change.text);
             } else {
@@ -55,23 +57,23 @@ impl DocumentInfo {
                 self.rope = Rope::from_str(&change.text);
             }
         }
-        
+
         self.analyze();
     }
-    
+
     fn analyze(&mut self) {
         let text = self.rope.to_string();
         self.diagnostics.clear();
         self.symbols.clear();
         self.tokens.clear();
         self.ast = None;
-        
+
         // Tokenize
         let mut lexer = Lexer::new(&text);
         match lexer.tokenize() {
             Ok(tokens) => {
                 self.tokens = tokens.clone();
-                
+
                 // Parse
                 let mut parser = VeyraParser::new(tokens);
                 match parser.parse() {
@@ -89,7 +91,7 @@ impl DocumentInfo {
             }
         }
     }
-    
+
     fn add_diagnostic_from_error(&mut self, error: &VeyraError) {
         // Convert VeyraError to LSP Diagnostic
         let diagnostic = Diagnostic {
@@ -112,16 +114,16 @@ impl DocumentInfo {
             tags: None,
             data: None,
         };
-        
+
         self.diagnostics.push(diagnostic);
     }
-    
+
     fn extract_symbols(&mut self, program: &Program) {
         for item in &program.items {
             self.extract_symbol_from_item(item);
         }
     }
-    
+
     fn extract_symbol_from_item(&mut self, item: &Item) {
         match item {
             Item::Function(func) => {
@@ -133,12 +135,24 @@ impl DocumentInfo {
                     #[allow(deprecated)]
                     deprecated: None,
                     range: Range {
-                        start: Position { line: 0, character: 0 }, // TODO: Track positions
-                        end: Position { line: 0, character: 0 },
+                        start: Position {
+                            line: 0,
+                            character: 0,
+                        }, // TODO: Track positions
+                        end: Position {
+                            line: 0,
+                            character: 0,
+                        },
                     },
                     selection_range: Range {
-                        start: Position { line: 0, character: 0 },
-                        end: Position { line: 0, character: 0 },
+                        start: Position {
+                            line: 0,
+                            character: 0,
+                        },
+                        end: Position {
+                            line: 0,
+                            character: 0,
+                        },
                     },
                     children: None,
                 };
@@ -153,12 +167,24 @@ impl DocumentInfo {
                     #[allow(deprecated)]
                     deprecated: None,
                     range: Range {
-                        start: Position { line: 0, character: 0 },
-                        end: Position { line: 0, character: 0 },
+                        start: Position {
+                            line: 0,
+                            character: 0,
+                        },
+                        end: Position {
+                            line: 0,
+                            character: 0,
+                        },
                     },
                     selection_range: Range {
-                        start: Position { line: 0, character: 0 },
-                        end: Position { line: 0, character: 0 },
+                        start: Position {
+                            line: 0,
+                            character: 0,
+                        },
+                        end: Position {
+                            line: 0,
+                            character: 0,
+                        },
                     },
                     children: None,
                 };
@@ -167,38 +193,38 @@ impl DocumentInfo {
             _ => {}
         }
     }
-    
+
     fn get_text_at_position(&self, position: Position) -> Option<String> {
         let line_idx = position.line as usize;
         let char_idx = position.character as usize;
-        
+
         if line_idx >= self.rope.len_lines() {
             return None;
         }
-        
+
         let line = self.rope.line(line_idx);
         let line_str = line.to_string();
-        
+
         // Find word boundaries around the position
         let chars: Vec<char> = line_str.chars().collect();
-        
+
         if char_idx >= chars.len() {
             return None;
         }
-        
+
         let mut start = char_idx;
         let mut end = char_idx;
-        
+
         // Find start of word
         while start > 0 && (chars[start - 1].is_alphanumeric() || chars[start - 1] == '_') {
             start -= 1;
         }
-        
+
         // Find end of word
         while end < chars.len() && (chars[end].is_alphanumeric() || chars[end] == '_') {
             end += 1;
         }
-        
+
         if start < end {
             Some(chars[start..end].iter().collect())
         } else {
@@ -219,13 +245,13 @@ impl VeyraLanguageServer {
             documents: Arc::new(DashMap::new()),
         }
     }
-    
+
     async fn publish_diagnostics(&self, uri: Url, diagnostics: Vec<Diagnostic>) {
         self.client
             .publish_diagnostics(uri, diagnostics, None)
             .await;
     }
-    
+
     fn get_completions_for_context(&self, _uri: &Url, _position: Position) -> Vec<CompletionItem> {
         // Built-in keywords
         let mut completions = vec![
@@ -272,7 +298,7 @@ impl VeyraLanguageServer {
                 ..Default::default()
             },
         ];
-        
+
         // Built-in functions
         let builtin_functions = vec![
             ("print", "Print a value to stdout"),
@@ -281,7 +307,7 @@ impl VeyraLanguageServer {
             ("push", "Add an element to an array"),
             ("pop", "Remove and return the last element of an array"),
         ];
-        
+
         for (name, description) in builtin_functions {
             completions.push(CompletionItem {
                 label: name.to_string(),
@@ -293,9 +319,9 @@ impl VeyraLanguageServer {
                 ..Default::default()
             });
         }
-        
+
         // TODO: Add context-specific completions (variables, functions from current document)
-        
+
         completions
     }
 }
@@ -358,70 +384,72 @@ impl LanguageServer for VeyraLanguageServer {
             },
         })
     }
-    
+
     async fn initialized(&self, _: InitializedParams) {
         self.client
             .log_message(MessageType::INFO, "Veyra Language Server initialized!")
             .await;
     }
-    
+
     async fn shutdown(&self) -> LspResult<()> {
         Ok(())
     }
-    
+
     async fn did_open(&self, params: DidOpenTextDocumentParams) {
         let uri = params.text_document.uri;
         let version = params.text_document.version;
         let text = params.text_document.text;
-        
+
         let document_info = DocumentInfo::new(text, version);
         let diagnostics = document_info.diagnostics.clone();
-        
+
         self.documents.insert(uri.clone(), document_info);
         self.publish_diagnostics(uri, diagnostics).await;
     }
-    
+
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
         let uri = params.text_document.uri;
         let version = params.text_document.version;
-        
+
         if let Some(mut document) = self.documents.get_mut(&uri) {
             document.update(params.content_changes, version);
             let diagnostics = document.diagnostics.clone();
             drop(document); // Release the lock
-            
+
             self.publish_diagnostics(uri, diagnostics).await;
         }
     }
-    
+
     async fn did_save(&self, _params: DidSaveTextDocumentParams) {
         self.client
             .log_message(MessageType::INFO, "Document saved!")
             .await;
     }
-    
+
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
         self.documents.remove(&params.text_document.uri);
     }
-    
+
     async fn completion(&self, params: CompletionParams) -> LspResult<Option<CompletionResponse>> {
         let uri = params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
-        
+
         let completions = self.get_completions_for_context(&uri, position);
-        
+
         Ok(Some(CompletionResponse::Array(completions)))
     }
-    
+
     async fn hover(&self, params: HoverParams) -> LspResult<Option<Hover>> {
         let uri = params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
-        
+
         if let Some(document) = self.documents.get(&uri) {
             if let Some(word) = document.get_text_at_position(position) {
                 let hover_content = match word.as_str() {
                     "print" => "Built-in function: print(value) - Print a value to stdout",
-                    "len" => "Built-in function: len(collection) - Get the length of an array or string",
+                    "len" => {
+                        "Built-in function: len(collection) - Get the length of an array or string"
+                    }
                     "str" => "Built-in function: str(value) - Convert a value to string",
                     "let" => "Keyword: let - Declare a new variable",
                     "fn" => "Keyword: fn - Declare a new function",
@@ -430,58 +458,67 @@ impl LanguageServer for VeyraLanguageServer {
                     "for" => "Keyword: for - For loop",
                     _ => return Ok(None),
                 };
-                
+
                 return Ok(Some(Hover {
-                    contents: HoverContents::Scalar(MarkedString::String(hover_content.to_string())),
+                    contents: HoverContents::Scalar(MarkedString::String(
+                        hover_content.to_string(),
+                    )),
                     range: None,
                 }));
             }
         }
-        
+
         Ok(None)
     }
-    
+
     async fn document_symbol(
         &self,
         params: DocumentSymbolParams,
     ) -> LspResult<Option<DocumentSymbolResponse>> {
         let uri = params.text_document.uri;
-        
+
         if let Some(document) = self.documents.get(&uri) {
             let symbols = document.symbols.clone();
             return Ok(Some(DocumentSymbolResponse::Nested(symbols)));
         }
-        
+
         Ok(None)
     }
-    
-    async fn formatting(&self, params: DocumentFormattingParams) -> LspResult<Option<Vec<TextEdit>>> {
+
+    async fn formatting(
+        &self,
+        params: DocumentFormattingParams,
+    ) -> LspResult<Option<Vec<TextEdit>>> {
         let uri = params.text_document.uri;
-        
+
         if let Some(_document) = self.documents.get(&uri) {
             // TODO: Implement actual formatting using the formatter tool
             // For now, return empty (no changes)
             return Ok(Some(vec![]));
         }
-        
+
         Ok(None)
     }
-    
+
     async fn semantic_tokens_full(
         &self,
         params: SemanticTokensParams,
     ) -> LspResult<Option<SemanticTokensResult>> {
         let uri = params.text_document.uri;
-        
+
         if let Some(document) = self.documents.get(&uri) {
             let mut tokens_data: Vec<SemanticToken> = Vec::new();
             let mut prev_line = 0;
             let mut prev_char = 0;
-            
+
             // Convert our tokens to semantic tokens
             for token in &document.tokens {
                 let token_type = match token.kind {
-                    TokenKind::Fn | TokenKind::Let | TokenKind::If | TokenKind::While | TokenKind::For => 0, // KEYWORD
+                    TokenKind::Fn
+                    | TokenKind::Let
+                    | TokenKind::If
+                    | TokenKind::While
+                    | TokenKind::For => 0, // KEYWORD
                     TokenKind::String(_) => 1, // STRING
                     TokenKind::Integer(_) | TokenKind::Float(_) => 2, // NUMBER
                     TokenKind::Identifier => {
@@ -491,7 +528,7 @@ impl LanguageServer for VeyraLanguageServer {
                     }
                     _ => continue, // Skip other tokens
                 };
-                
+
                 let line = token.line as u32;
                 let character = token.column as u32;
                 let length = match &token.kind {
@@ -501,28 +538,32 @@ impl LanguageServer for VeyraLanguageServer {
                     TokenKind::Identifier => token.lexeme.len(),
                     _ => token.lexeme.len(),
                 };
-                
+
                 tokens_data.push(SemanticToken {
                     delta_line: line - prev_line,
-                    delta_start: if line == prev_line { character - prev_char } else { character },
+                    delta_start: if line == prev_line {
+                        character - prev_char
+                    } else {
+                        character
+                    },
                     length: length as u32,
                     token_type,
                     token_modifiers_bitset: 0,
                 });
-                
+
                 prev_line = line;
                 prev_char = character;
             }
-            
+
             return Ok(Some(SemanticTokensResult::Tokens(SemanticTokens {
                 result_id: None,
                 data: tokens_data,
             })));
         }
-        
+
         Ok(None)
     }
-    
+
     async fn semantic_tokens_range(
         &self,
         params: SemanticTokensRangeParams,
@@ -534,7 +575,7 @@ impl LanguageServer for VeyraLanguageServer {
             partial_result_params: params.partial_result_params,
             work_done_progress_params: params.work_done_progress_params,
         };
-        
+
         match self.semantic_tokens_full(full_params).await {
             Ok(Some(SemanticTokensResult::Tokens(tokens))) => {
                 Ok(Some(SemanticTokensRangeResult::Tokens(tokens)))
@@ -547,22 +588,22 @@ impl LanguageServer for VeyraLanguageServer {
             Err(e) => Err(e),
         }
     }
-    
+
     async fn document_highlight(
         &self,
         params: DocumentHighlightParams,
     ) -> LspResult<Option<Vec<DocumentHighlight>>> {
         let uri = params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
-        
+
         if let Some(document) = self.documents.get(&uri) {
             if let Some(word) = document.get_text_at_position(position) {
                 let mut highlights = Vec::new();
-                
+
                 // Find all occurrences of the word in the document
                 let text = document.rope.to_string();
                 let lines: Vec<&str> = text.lines().collect();
-                
+
                 for (line_idx, line) in lines.iter().enumerate() {
                     let mut start = 0;
                     while let Some(pos) = line[start..].find(&word) {
@@ -583,14 +624,14 @@ impl LanguageServer for VeyraLanguageServer {
                         start = char_start + word.len();
                     }
                 }
-                
+
                 return Ok(Some(highlights));
             }
         }
-        
+
         Ok(None)
     }
-    
+
     async fn code_action(
         &self,
         _params: CodeActionParams,
@@ -605,10 +646,10 @@ impl LanguageServer for VeyraLanguageServer {
 async fn main() -> Result<()> {
     let stdin = tokio::io::stdin();
     let stdout = tokio::io::stdout();
-    
+
     let (service, socket) = LspService::new(|client| VeyraLanguageServer::new(client));
-    
+
     Server::new(stdin, stdout, socket).serve(service).await;
-    
+
     Ok(())
 }
