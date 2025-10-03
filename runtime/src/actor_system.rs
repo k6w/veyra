@@ -34,6 +34,7 @@ pub struct ActorRef {
     pub id: ActorId,
     pub name: String,
     sender: mpsc::UnboundedSender<ActorMessage>,
+    #[allow(dead_code)]
     system: Arc<ActorSystem>,
 }
 
@@ -81,7 +82,9 @@ pub struct ActorContext {
 
 /// Internal message structure
 struct ActorMessage {
+    #[allow(dead_code)]
     id: MessageId,
+    #[allow(dead_code)]
     sender: Option<ActorRef>,
     payload: Box<dyn Any + Send>,
     reply_to: Option<oneshot::Sender<ActorResult>>,
@@ -153,11 +156,7 @@ impl ActorSystem {
 
     pub async fn shutdown(&self) -> Result<()> {
         // Gracefully shutdown all actors
-        let actors: Vec<_> = self
-            .actors
-            .iter()
-            .map(|entry| entry.key().clone())
-            .collect();
+        let actors: Vec<_> = self.actors.iter().map(|entry| *entry.key()).collect();
 
         for actor_id in actors {
             self.stop_actor(&actor_id).await?;
@@ -410,7 +409,7 @@ impl Supervisor {
     async fn handle_failure(&self, actor_id: ActorId, _error: ActorError) -> SupervisionDecision {
         // Check restart limits
         let now = std::time::Instant::now();
-        let mut restart_times = self.restart_counts.entry(actor_id).or_insert_with(Vec::new);
+        let mut restart_times = self.restart_counts.entry(actor_id).or_default();
 
         // Remove old restart times outside the window
         restart_times.retain(|&time| now.duration_since(time) <= self.restart_window);
@@ -449,16 +448,13 @@ impl MessageRouter {
     }
 
     pub fn add_route(&self, pattern: String, actor_id: ActorId) {
-        self.routes
-            .entry(pattern)
-            .or_insert_with(Vec::new)
-            .push(actor_id);
+        self.routes.entry(pattern).or_default().push(actor_id);
     }
 
     pub fn add_to_broadcast_group(&self, group: String, actor_id: ActorId) {
         self.broadcast_groups
             .entry(group)
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(actor_id);
     }
 

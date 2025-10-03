@@ -107,7 +107,8 @@ impl GarbageCollector {
     }
 
     pub async fn stop(&self) -> Result<()> {
-        if let Some(handle) = self.collection_thread.write().take() {
+        let handle = self.collection_thread.write().take();
+        if let Some(handle) = handle {
             handle.abort();
             let _ = handle.await;
         }
@@ -236,7 +237,7 @@ impl GarbageCollector {
                 return;
             }
 
-            marked.insert(object_ref.clone());
+            marked.insert(*object_ref);
 
             // Mark all objects referenced by this object
             if let Ok(references) = memory_manager.get_object_references(object_ref).await {

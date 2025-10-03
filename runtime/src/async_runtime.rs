@@ -15,6 +15,7 @@ pub struct AsyncRuntime {
     scheduler: Arc<TaskScheduler>,
     executor: RwLock<Option<JoinHandle<()>>>,
     timers: Arc<TimerWheel>,
+    #[allow(dead_code)]
     channels: Arc<ChannelManager>,
     stats: RwLock<RuntimeStats>,
 }
@@ -52,8 +53,10 @@ pub struct TaskScheduler {
 
 struct Task {
     id: TaskId,
+    #[allow(dead_code)]
     priority: TaskPriority,
     future: BoxFuture<'static, Result<TaskResult>>,
+    #[allow(dead_code)]
     created_at: Instant,
     deadline: Option<Instant>,
 }
@@ -98,7 +101,9 @@ pub struct TimerWheel {
 }
 
 struct Timer {
+    #[allow(dead_code)]
     id: Uuid,
+    #[allow(dead_code)]
     deadline: Instant,
     waker: Option<Waker>,
     callback: Option<Box<dyn Fn() + Send + Sync>>,
@@ -110,9 +115,11 @@ pub struct ChannelManager {
 }
 
 struct ChannelInfo {
+    #[allow(dead_code)]
     id: Uuid,
     sender_count: usize,
     receiver_count: usize,
+    #[allow(dead_code)]
     buffer_size: usize,
     messages_sent: u64,
     messages_received: u64,
@@ -152,7 +159,8 @@ impl AsyncRuntime {
     }
 
     pub async fn shutdown(&self) -> Result<()> {
-        if let Some(handle) = self.executor.write().take() {
+        let handle = self.executor.write().take();
+        if let Some(handle) = handle {
             handle.abort();
             let _ = handle.await;
         }

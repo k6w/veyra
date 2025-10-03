@@ -96,6 +96,7 @@ pub enum Instruction {
 /// Optimization passes for bytecode
 pub struct OptimizationPass {
     pub name: String,
+    #[allow(clippy::type_complexity)]
     pub apply: Box<dyn Fn(&[Instruction]) -> Vec<Instruction> + Send + Sync>,
 }
 
