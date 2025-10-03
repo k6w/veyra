@@ -41,8 +41,13 @@ jobs:
     - name: Cache cargo build
       uses: actions/cache@v4
       with:
-        path: target
-        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+        path: |
+          compiler/target
+          runtime/target
+          tools/target
+        key: ${{ runner.os }}-${{ matrix.rust }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.rust }}-cargo-build-
     
     - name: Build Compiler
       run: |
@@ -52,6 +57,16 @@ jobs:
     - name: Run Compiler Tests
       run: |
         cd compiler
+        cargo test --verbose
+    
+    - name: Build Runtime
+      run: |
+        cd runtime
+        cargo build --verbose
+    
+    - name: Run Runtime Tests
+      run: |
+        cd runtime
         cargo test --verbose
     
     - name: Build Tools
@@ -80,12 +95,16 @@ jobs:
       run: |
         cd compiler
         cargo fmt -- --check
+        cd ../runtime
+        cargo fmt -- --check
         cd ../tools
         cargo fmt -- --check
     
     - name: Run clippy
       run: |
         cd compiler
+        cargo clippy -- -D warnings
+        cd ../runtime
         cargo clippy -- -D warnings
         cd ../tools
         cargo clippy -- -D warnings
