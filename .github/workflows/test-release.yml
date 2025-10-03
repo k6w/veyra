@@ -1,0 +1,140 @@
+name: Test Release Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_version:
+        description: 'Test version number (e.g., 0.1.0-test)'
+        required: true
+        default: '0.1.0-test'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test-build:
+    name: Test Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: veyra-linux-x64-test
+            archive_ext: tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: veyra-windows-x64-test
+            archive_ext: zip
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: veyra-macos-x64-test
+            archive_ext: tar.gz
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.target }}
+    
+    - name: Build Compiler
+      run: |
+        cd compiler
+        cargo build --release --target ${{ matrix.target }}
+    
+    - name: Build Tools
+      run: |
+        cd tools
+        cargo build --release --target ${{ matrix.target }}
+    
+    - name: Create Release Directory (Unix)
+      if: matrix.os != 'windows-latest'
+      run: |
+        mkdir -p release/bin
+        mkdir -p release/stdlib
+        mkdir -p release/examples
+        cp compiler/target/${{ matrix.target }}/release/veyc release/bin/
+        cp tools/target/${{ matrix.target }}/release/veyra-repl release/bin/
+        cp tools/target/${{ matrix.target }}/release/veyra-dbg release/bin/
+        cp tools/target/${{ matrix.target }}/release/veyra-lint release/bin/
+        cp tools/target/${{ matrix.target }}/release/veyra-fmt release/bin/
+        cp tools/target/${{ matrix.target }}/release/veyra-lsp release/bin/
+        cp tools/target/${{ matrix.target }}/release/veyra-pkg release/bin/
+        cp -r stdlib/* release/stdlib/
+        cp -r examples/* release/examples/
+        cp README.md release/
+        cp LICENSE release/
+        cp QUICK_START.md release/
+    
+    - name: Create Release Directory (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        New-Item -ItemType Directory -Force -Path release\bin
+        New-Item -ItemType Directory -Force -Path release\stdlib
+        New-Item -ItemType Directory -Force -Path release\examples
+        Copy-Item compiler\target\${{ matrix.target }}\release\veyc.exe release\bin\
+        Copy-Item tools\target\${{ matrix.target }}\release\veyra-repl.exe release\bin\
+        Copy-Item tools\target\${{ matrix.target }}\release\veyra-dbg.exe release\bin\
+        Copy-Item tools\target\${{ matrix.target }}\release\veyra-lint.exe release\bin\
+        Copy-Item tools\target\${{ matrix.target }}\release\veyra-fmt.exe release\bin\
+        Copy-Item tools\target\${{ matrix.target }}\release\veyra-lsp.exe release\bin\
+        Copy-Item tools\target\${{ matrix.target }}\release\veyra-pkg.exe release\bin\
+        Copy-Item -Recurse stdlib\* release\stdlib\
+        Copy-Item -Recurse examples\* release\examples\
+        Copy-Item README.md release\
+        Copy-Item LICENSE release\
+        Copy-Item QUICK_START.md release\
+    
+    - name: Create Archive (Unix)
+      if: matrix.os != 'windows-latest'
+      run: |
+        cd release
+        tar czf ../${{ matrix.artifact_name }}.tar.gz *
+    
+    - name: Create Archive (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd release
+        Compress-Archive -Path * -DestinationPath ..\${{ matrix.artifact_name }}.zip
+    
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: ${{ matrix.artifact_name }}.${{ matrix.archive_ext }}
+        retention-days: 7
+
+  test-vscode-extension:
+    name: Test VS Code Extension Build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        cd tools/vscode_extension
+        npm install
+    
+    - name: Install vsce
+      run: npm install -g @vscode/vsce
+    
+    - name: Build extension
+      run: |
+        cd tools/vscode_extension
+        vsce package --out veyra-lang-${{ github.event.inputs.test_version }}.vsix
+    
+    - name: Upload VS Code Extension Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: vscode-extension-test
+        path: tools/vscode_extension/veyra-lang-${{ github.event.inputs.test_version }}.vsix
+        retention-days: 7

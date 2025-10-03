@@ -14,7 +14,7 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_id: ${{ steps.create_release.outputs.id }}
       version: ${{ steps.get_version.outputs.version }}
     
     steps:
@@ -24,28 +24,53 @@ jobs:
     
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: actions/github-script@v7
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Veyra v${{ steps.get_version.outputs.version }}
-        draft: false
-        prerelease: false
-        body: |
-          ## Veyra Programming Language v${{ steps.get_version.outputs.version }}
+        script: |
+          const { data: release } = await github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: context.ref.replace('refs/tags/', ''),
+            name: `Veyra v${{ steps.get_version.outputs.version }}`,
+            body: `## Veyra Programming Language v${{ steps.get_version.outputs.version }}
           
           ### Downloads
           
-          Download the appropriate binary for your platform below.
+          Download the appropriate binary for your platform below:
+          
+          - **Linux x64**: \`veyra-linux-x64.tar.gz\`
+          - **Linux ARM64**: \`veyra-linux-arm64.tar.gz\`
+          - **Windows x64**: \`veyra-windows-x64.zip\`
+          - **Windows ARM64**: \`veyra-windows-arm64.zip\`
+          - **macOS x64 (Intel)**: \`veyra-macos-x64.tar.gz\`
+          - **macOS ARM64 (Apple Silicon)**: \`veyra-macos-arm64.tar.gz\`
+          - **VS Code Extension**: \`veyra-lang-${{ steps.get_version.outputs.version }}.vsix\`
+          
+          ### What's Included
+          
+          Each platform archive contains:
+          - \`veyc\` - Veyra compiler
+          - \`veyra-repl\` - Interactive REPL
+          - \`veyra-fmt\` - Code formatter
+          - \`veyra-lint\` - Linter and static analyzer
+          - \`veyra-lsp\` - Language Server Protocol implementation
+          - \`veyra-dbg\` - Debugger
+          - \`veyra-pkg\` - Package manager
+          - Standard library files
+          - Documentation and examples
           
           ### Installation
           
-          1. Download the binary for your OS
+          1. Download the binary for your OS and architecture
           2. Extract the archive
-          3. Add the `bin` directory to your PATH
+          3. Add the \`bin\` directory to your PATH
+          4. Optionally install the VS Code extension
           
-          See the [Quick Start Guide](https://github.com/k6w/veyra/blob/main/QUICK_START.md) for more information.
+          See the [Quick Start Guide](https://github.com/k6w/veyra/blob/main/QUICK_START.md) for detailed installation instructions.`,
+            draft: false,
+            prerelease: false
+          });
+          return release.id;
 
   build-release:
     name: Build Release
@@ -58,13 +83,25 @@ jobs:
             target: x86_64-unknown-linux-gnu
             artifact_name: veyra-linux-x64
             archive_ext: tar.gz
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            artifact_name: veyra-linux-arm64
+            archive_ext: tar.gz
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact_name: veyra-windows-x64
             archive_ext: zip
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+            artifact_name: veyra-windows-arm64
+            archive_ext: zip
           - os: macos-latest
             target: x86_64-apple-darwin
             artifact_name: veyra-macos-x64
+            archive_ext: tar.gz
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: veyra-macos-arm64
             archive_ext: tar.gz
     
     steps:
@@ -72,28 +109,41 @@ jobs:
     
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.target }}
+    
+    - name: Install cross-compilation tools (Linux ARM64)
+      if: matrix.target == 'aarch64-unknown-linux-gnu'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-aarch64-linux-gnu
+        echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
     
     - name: Build Compiler
       run: |
         cd compiler
-        cargo build --release
+        cargo build --release --target ${{ matrix.target }}
     
     - name: Build Tools
       run: |
         cd tools
-        cargo build --release
+        cargo build --release --target ${{ matrix.target }}
     
     - name: Create Release Directory (Unix)
       if: matrix.os != 'windows-latest'
       run: |
         mkdir -p release/bin
-        cp compiler/target/release/veyc release/bin/ || true
-        cp tools/target/release/veyra-repl release/bin/ || true
-        cp tools/target/release/veyra-dbg release/bin/ || true
-        cp tools/target/release/veyra-lint release/bin/ || true
-        cp tools/target/release/veyra-fmt release/bin/ || true
-        cp tools/target/release/veyra-lsp release/bin/ || true
-        cp tools/target/release/veyra-pkg release/bin/ || true
+        mkdir -p release/stdlib
+        mkdir -p release/examples
+        cp compiler/target/${{ matrix.target }}/release/veyc release/bin/
+        cp tools/target/${{ matrix.target }}/release/veyra-repl release/bin/
+        cp tools/target/${{ matrix.target }}/release/veyra-dbg release/bin/
+        cp tools/target/${{ matrix.target }}/release/veyra-lint release/bin/
+        cp tools/target/${{ matrix.target }}/release/veyra-fmt release/bin/
+        cp tools/target/${{ matrix.target }}/release/veyra-lsp release/bin/
+        cp tools/target/${{ matrix.target }}/release/veyra-pkg release/bin/
+        cp -r stdlib/* release/stdlib/
+        cp -r examples/* release/examples/
         cp README.md release/
         cp LICENSE release/
         cp QUICK_START.md release/
@@ -102,13 +152,17 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         New-Item -ItemType Directory -Force -Path release\bin
-        Copy-Item compiler\target\release\veyc.exe release\bin\ -ErrorAction SilentlyContinue
-        Copy-Item tools\target\release\veyra-repl.exe release\bin\ -ErrorAction SilentlyContinue
-        Copy-Item tools\target\release\veyra-dbg.exe release\bin\ -ErrorAction SilentlyContinue
-        Copy-Item tools\target\release\veyra-lint.exe release\bin\ -ErrorAction SilentlyContinue
-        Copy-Item tools\target\release\veyra-fmt.exe release\bin\ -ErrorAction SilentlyContinue
-        Copy-Item tools\target\release\veyra-lsp.exe release\bin\ -ErrorAction SilentlyContinue
-        Copy-Item tools\target\release\veyra-pkg.exe release\bin\ -ErrorAction SilentlyContinue
+        New-Item -ItemType Directory -Force -Path release\stdlib
+        New-Item -ItemType Directory -Force -Path release\examples
+        Copy-Item compiler\target\${{ matrix.target }}\release\veyc.exe release\bin\
+        Copy-Item tools\target\${{ matrix.target }}\release\veyra-repl.exe release\bin\
+        Copy-Item tools\target\${{ matrix.target }}\release\veyra-dbg.exe release\bin\
+        Copy-Item tools\target\${{ matrix.target }}\release\veyra-lint.exe release\bin\
+        Copy-Item tools\target\${{ matrix.target }}\release\veyra-fmt.exe release\bin\
+        Copy-Item tools\target\${{ matrix.target }}\release\veyra-lsp.exe release\bin\
+        Copy-Item tools\target\${{ matrix.target }}\release\veyra-pkg.exe release\bin\
+        Copy-Item -Recurse stdlib\* release\stdlib\
+        Copy-Item -Recurse examples\* release\examples\
         Copy-Item README.md release\
         Copy-Item LICENSE release\
         Copy-Item QUICK_START.md release\
@@ -126,11 +180,77 @@ jobs:
         Compress-Archive -Path * -DestinationPath ..\${{ matrix.artifact_name }}.zip
     
     - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: actions/github-script@v7
       with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./${{ matrix.artifact_name }}.${{ matrix.archive_ext }}
-        asset_name: ${{ matrix.artifact_name }}.${{ matrix.archive_ext }}
-        asset_content_type: ${{ matrix.archive_ext == 'zip' && 'application/zip' || 'application/gzip' }}
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          const artifactPath = path.join(process.cwd(), '${{ matrix.artifact_name }}.${{ matrix.archive_ext }}');
+          const artifactName = '${{ matrix.artifact_name }}.${{ matrix.archive_ext }}';
+          const contentType = '${{ matrix.archive_ext }}' === 'zip' ? 'application/zip' : 'application/gzip';
+          
+          const uploadAsset = await github.rest.repos.uploadReleaseAsset({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: ${{ needs.create-release.outputs.release_id }},
+            name: artifactName,
+            data: fs.readFileSync(artifactPath),
+            headers: {
+              'content-type': contentType,
+              'content-length': fs.statSync(artifactPath).size
+            }
+          });
+          
+          console.log(`Uploaded ${artifactName} successfully`);
+
+  build-vscode-extension:
+    name: Build VS Code Extension
+    needs: create-release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        cd tools/vscode_extension
+        npm install
+    
+    - name: Install vsce
+      run: npm install -g @vscode/vsce
+    
+    - name: Build extension
+      run: |
+        cd tools/vscode_extension
+        vsce package --out veyra-lang-${{ needs.create-release.outputs.version }}.vsix
+    
+    - name: Upload VS Code Extension
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          const artifactPath = path.join(process.cwd(), 'tools', 'vscode_extension', 'veyra-lang-${{ needs.create-release.outputs.version }}.vsix');
+          const artifactName = 'veyra-lang-${{ needs.create-release.outputs.version }}.vsix';
+          
+          const uploadAsset = await github.rest.repos.uploadReleaseAsset({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: ${{ needs.create-release.outputs.release_id }},
+            name: artifactName,
+            data: fs.readFileSync(artifactPath),
+            headers: {
+              'content-type': 'application/zip',
+              'content-length': fs.statSync(artifactPath).size
+            }
+          });
+          
+          console.log(`Uploaded VS Code extension ${artifactName} successfully`);

@@ -61,21 +61,47 @@ Veyra is a production-ready programming language that combines the safety of mod
 - Rust 1.70 or higher ([Install Rust](https://rustup.rs/))
 - Git
 
-### Installation
+## 📦 Installation
+
+### Option 1: Download Pre-built Releases (Recommended)
+
+Download the latest release for your platform from the [releases page](https://github.com/k6w/veyra/releases):
+
+- **Linux x64**: `veyra-linux-x64.tar.gz`
+- **Linux ARM64**: `veyra-linux-arm64.tar.gz`
+- **Windows x64**: `veyra-windows-x64.zip`
+- **Windows ARM64**: `veyra-windows-arm64.zip`
+- **macOS x64 (Intel)**: `veyra-macos-x64.tar.gz`
+- **macOS ARM64 (Apple Silicon)**: `veyra-macos-arm64.tar.gz`
+
+Each release includes all tools and the standard library.
+
+### Option 2: Build from Source
 
 ```bash
 # Clone the repository
 git clone https://github.com/k6w/veyra.git
 cd veyra
 
-# Build the compiler
-cd compiler
-cargo build --release
+# Quick build (Unix/Linux/macOS)
+./scripts/build-release.sh
 
-# Build the tools
-cd ../tools
-cargo build --release
+# Quick build (Windows PowerShell)
+.\scripts\build-release.ps1
+
+# Manual build
+cd compiler && cargo build --release && cd ..
+cd tools && cargo build --release && cd ..
 ```
+
+### Option 3: Install VS Code Extension
+
+Download the `veyra-lang-*.vsix` file from releases and install it in VS Code:
+
+1. Open VS Code
+2. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS)
+3. Type "Extensions: Install from VSIX"
+4. Select the downloaded `.vsix` file
 
 ### Your First Veyra Program
 
@@ -93,12 +119,20 @@ main()
 Run it:
 
 ```bash
-./compiler/target/release/veyra hello.vey
+# If using pre-built release
+veyc hello.vey
+
+# If built from source
+./compiler/target/release/veyc hello.vey
 ```
 
 ### Try the REPL
 
 ```bash
+# If using pre-built release
+veyra-repl
+
+# If built from source
 ./tools/target/release/veyra-repl
 ```
 
