@@ -78,22 +78,13 @@ struct LintIssue {
     suggestion: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 struct LintConfig {
     #[serde(default)]
     rules: HashMap<String, String>, // rule_name -> "error" | "warning" | "info" | "off"
 
     #[serde(default)]
     warnings_as_errors: bool,
-}
-
-impl Default for LintConfig {
-    fn default() -> Self {
-        Self {
-            rules: HashMap::new(),
-            warnings_as_errors: false,
-        }
-    }
 }
 
 struct Linter {
@@ -298,9 +289,7 @@ impl Linter {
                 format!("Variable '{}' is declared but never used", var),
                 1, // TODO: Track actual line numbers in AST
                 1,
-                Some(format!(
-                    "Consider removing the variable or prefixing with '_'"
-                )),
+                Some("Consider removing the variable or prefixing with '_'".to_string()),
             );
         }
     }
@@ -315,9 +304,7 @@ impl Linter {
                 format!("Function '{}' is defined but never called", func),
                 1,
                 1,
-                Some(format!(
-                    "Consider removing the function or making it public"
-                )),
+                Some("Consider removing the function or making it public".to_string()),
             );
         }
     }

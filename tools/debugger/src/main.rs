@@ -183,7 +183,7 @@ impl Debugger {
     }
 
     fn parse_command(&self, input: &str) -> Result<DebugCommand> {
-        let parts: Vec<&str> = input.trim().split_whitespace().collect();
+        let parts: Vec<&str> = input.split_whitespace().collect();
 
         if parts.is_empty() {
             return Err(anyhow!("Empty command"));

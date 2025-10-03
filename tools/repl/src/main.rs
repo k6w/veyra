@@ -289,7 +289,7 @@ fn format_value(value: &Value) -> String {
         Value::Reference(r) => {
             // Access the inner value through the Rc<RefCell<Value>>
             match r.value.try_borrow() {
-                Ok(val) => format!("&{}", format_value(&*val)),
+                Ok(val) => format!("&{}", format_value(&val)),
                 Err(_) => "&<borrowed>".to_string(),
             }
         }

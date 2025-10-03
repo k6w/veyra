@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
-use tokio;
 
 #[derive(Parser)]
 #[command(name = "veyra-pkg")]
@@ -242,8 +241,10 @@ impl PackageManager {
         fs::create_dir_all(project_dir.join("docs"))?;
 
         // Create veyra.toml
-        let mut project = VeyraProject::default();
-        project.name = project_name.clone();
+        let project = VeyraProject {
+            name: project_name.clone(),
+            ..Default::default()
+        };
 
         let project_file = project_dir.join("veyra.toml");
         let content = toml::to_string_pretty(&project)?;
@@ -526,7 +527,7 @@ print("Package {} loaded")
 
         // Run with veyra compiler
         let mut cmd = std::process::Command::new("cargo");
-        cmd.args(&["run", "--manifest-path"])
+        cmd.args(["run", "--manifest-path"])
             .arg(self.project_dir.join("../compiler/Cargo.toml"))
             .arg("--")
             .arg(&main_file);
@@ -599,7 +600,7 @@ print("Package {} loaded")
             // TODO: Implement actual test runner
             // For now, just run the file
             let mut cmd = std::process::Command::new("cargo");
-            cmd.args(&["run", "--manifest-path"])
+            cmd.args(["run", "--manifest-path"])
                 .arg(self.project_dir.join("../compiler/Cargo.toml"))
                 .arg("--")
                 .arg(&test_file);

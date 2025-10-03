@@ -2,6 +2,7 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 #[allow(dead_code)]
+#[allow(clippy::enum_variant_names)]
 pub enum VeyraError {
     #[error("Lexer error at line {line}, column {column}: {message}")]
     LexError {

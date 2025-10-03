@@ -3,7 +3,6 @@ use dashmap::DashMap;
 use ropey::Rope;
 
 use std::sync::Arc;
-use tokio;
 use tower_lsp::jsonrpc::Result as LspResult;
 use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, LanguageServer, LspService, Server};
@@ -647,7 +646,7 @@ async fn main() -> Result<()> {
     let stdin = tokio::io::stdin();
     let stdout = tokio::io::stdout();
 
-    let (service, socket) = LspService::new(|client| VeyraLanguageServer::new(client));
+    let (service, socket) = LspService::new(VeyraLanguageServer::new);
 
     Server::new(stdin, stdout, socket).serve(service).await;
 

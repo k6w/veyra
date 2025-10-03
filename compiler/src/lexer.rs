@@ -954,7 +954,7 @@ impl Lexer {
             }
         }
 
-        return self.error("Unterminated block comment");
+        self.error("Unterminated block comment")
     }
 
     #[allow(dead_code)]

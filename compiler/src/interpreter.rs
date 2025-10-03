@@ -129,6 +129,12 @@ pub struct Interpreter {
     functions: HashMap<String, Function>,
 }
 
+impl Default for Interpreter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Interpreter {
     pub fn new() -> Self {
         Self {
@@ -137,6 +143,7 @@ impl Interpreter {
         }
     }
 
+    #[allow(dead_code)]
     pub fn interpret(&mut self, program: &Program) -> Result<Value> {
         self.interpret_program(program)?;
         Ok(Value::None)
@@ -193,7 +200,7 @@ impl Interpreter {
                         "print() takes exactly one argument",
                     ));
                 }
-                println!("{}", self.value_to_string(&args[0]));
+                println!("{}", Self::value_to_string(&args[0]));
                 return Ok(Value::None);
             }
             "str" => {
@@ -202,7 +209,7 @@ impl Interpreter {
                         "str() takes exactly one argument",
                     ));
                 }
-                return Ok(Value::String(self.value_to_string(&args[0])));
+                return Ok(Value::String(Self::value_to_string(&args[0])));
             }
             "len" => {
                 if args.len() != 1 {
@@ -596,7 +603,7 @@ impl Interpreter {
                 }
             }
             "now" => {
-                if args.len() != 0 {
+                if !args.is_empty() {
                     return Err(VeyraError::runtime_error("now() takes no arguments"));
                 }
                 // Return current Unix timestamp in seconds
@@ -608,7 +615,7 @@ impl Interpreter {
                 return Ok(Value::Integer(timestamp as i64));
             }
             "range" => {
-                if args.len() < 1 || args.len() > 3 {
+                if args.is_empty() || args.len() > 3 {
                     return Err(VeyraError::runtime_error(
                         "range() takes 1, 2, or 3 arguments",
                     ));
@@ -992,7 +999,7 @@ impl Interpreter {
                 // Use error mechanism to bubble up return value (hack)
                 return Err(VeyraError::runtime_error(format!(
                     "return:{}",
-                    self.value_to_string(&value)
+                    Self::value_to_string(&value)
                 )));
             }
             Statement::Break => {
@@ -1507,11 +1514,11 @@ impl Interpreter {
                     ))),
                 },
                 PrimitiveType::Bool => Ok(Value::Boolean(value.is_truthy())),
-                PrimitiveType::String => Ok(Value::String(self.value_to_string(&value))),
+                PrimitiveType::String => Ok(Value::String(Self::value_to_string(&value))),
                 PrimitiveType::Char => match value {
                     Value::Char(c) => Ok(Value::Char(c)),
                     Value::Integer(n) => {
-                        if n >= 0 && n <= 0x10FFFF {
+                        if (0..=0x10FFFF).contains(&n) {
                             std::char::from_u32(n as u32)
                                 .map(Value::Char)
                                 .ok_or_else(|| {
@@ -1554,7 +1561,7 @@ impl Interpreter {
         }
     }
 
-    fn value_to_string(&self, value: &Value) -> String {
+    fn value_to_string(value: &Value) -> String {
         match value {
             Value::Integer(n) => n.to_string(),
             Value::Float(f) => f.to_string(),
@@ -1563,13 +1570,13 @@ impl Interpreter {
             Value::Boolean(b) => b.to_string(),
             Value::None => "None".to_string(),
             Value::Array(arr) => {
-                let elements: Vec<String> = arr.iter().map(|v| self.value_to_string(v)).collect();
+                let elements: Vec<String> = arr.iter().map(Self::value_to_string).collect();
                 format!("[{}]", elements.join(", "))
             }
             Value::Dictionary(map) => {
                 let mut pairs: Vec<String> = map
                     .iter()
-                    .map(|(k, v)| format!("\"{}\": {}", k, self.value_to_string(v)))
+                    .map(|(k, v)| format!("\"{}\": {}", k, Self::value_to_string(v)))
                     .collect();
                 pairs.sort(); // For consistent output
                 format!("{{{}}}", pairs.join(", "))
@@ -1580,12 +1587,12 @@ impl Interpreter {
                 format!("{{{}}}", elements.join(", "))
             }
             Value::Tuple(tuple) => {
-                let elements: Vec<String> = tuple.iter().map(|v| self.value_to_string(v)).collect();
+                let elements: Vec<String> = tuple.iter().map(Self::value_to_string).collect();
                 format!("({})", elements.join(", "))
             }
             Value::Reference(r) => {
                 let prefix = if r.mutable { "&mut " } else { "&" };
-                format!("{}{}", prefix, self.value_to_string(&r.value.borrow()))
+                format!("{}{}", prefix, Self::value_to_string(&r.value.borrow()))
             }
         }
     }
