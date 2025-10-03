@@ -24,7 +24,7 @@ sha2 = "0.10"
 dirs = "5.0"
 walkdir = "2.0"
 semver = "1.0"
-colored = "2.0"
+colored = "3.0"
 
 [dependencies.veyra-compiler]
 path = "../../compiler"
