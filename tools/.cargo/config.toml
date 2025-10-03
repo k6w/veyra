@@ -1,4 +1,12 @@
-# Use MSVC toolchain on Windows (requires Visual Studio Build Tools)
-[build]
-target = "x86_64-pc-windows-msvc"
+# Platform-specific build configurations
+# The target is automatically selected based on the host platform
 
+[target.x86_64-pc-windows-msvc]
+# Use MSVC toolchain on Windows (requires Visual Studio Build Tools)
+# This only applies when building on Windows
+
+[target.x86_64-unknown-linux-gnu]
+# Linux builds use the default GNU toolchain
+
+[target.x86_64-apple-darwin]
+# macOS builds use the default Apple toolchain

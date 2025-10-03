@@ -49,19 +49,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-${{ matrix.rust }}-cargo-build-
     
-    - name: Clean cross-platform artifacts
-      run: |
-        if [ -d "tools/target/x86_64-pc-windows-msvc" ] && [ "$RUNNER_OS" != "Windows" ]; then
-          rm -rf tools/target/x86_64-pc-windows-msvc
-        fi
-        if [ -d "compiler/target/x86_64-pc-windows-msvc" ] && [ "$RUNNER_OS" != "Windows" ]; then
-          rm -rf compiler/target/x86_64-pc-windows-msvc
-        fi
-        if [ -d "runtime/target/x86_64-pc-windows-msvc" ] && [ "$RUNNER_OS" != "Windows" ]; then
-          rm -rf runtime/target/x86_64-pc-windows-msvc
-        fi
-      shell: bash
-    
     - name: Build Compiler
       run: |
         cd compiler
