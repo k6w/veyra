@@ -77,7 +77,7 @@ impl MemoryManager {
     pub fn new() -> Self {
         Self::with_config(MemoryConfig::default())
     }
-    
+
     pub fn with_config(config: MemoryConfig) -> Self {
         Self {
             regions: RwLock::new(HashMap::new()),
@@ -87,13 +87,13 @@ impl MemoryManager {
             config,
         }
     }
-    
+
     pub async fn initialize(&self) -> Result<()> {
         // Create initial region
         self.create_region(0).await?;
         Ok(())
     }
-    
+
     pub async fn shutdown(&self) -> Result<()> {
         // Clean up all regions and objects
         self.regions.write().clear();
@@ -101,7 +101,7 @@ impl MemoryManager {
         self.roots.write().clear();
         Ok(())
     }
-    
+
     pub async fn allocate_object(
         &self,
         size: usize,
@@ -109,10 +109,10 @@ impl MemoryManager {
     ) -> Result<ObjectRef> {
         let generation = generation.unwrap_or(0);
         let object_ref = Uuid::new_v4();
-        
+
         // Find or create a suitable region
         let region_id = self.find_or_create_region(size, generation).await?;
-        
+
         // Create object info
         let object_info = ObjectInfo {
             object_ref,
@@ -123,7 +123,7 @@ impl MemoryManager {
             reference_count: 0,
             allocated_at: std::time::Instant::now(),
         };
-        
+
         // Update region allocation
         {
             let mut regions = self.regions.write();
@@ -132,28 +132,30 @@ impl MemoryManager {
                 region.objects.insert(object_ref);
             }
         }
-        
+
         // Track object
         self.objects.write().insert(object_ref, object_info);
-        
+
         // Update stats
         {
             let mut stats = self.stats.write();
             stats.total_allocated += size;
             stats.active_objects += 1;
             stats.allocations += 1;
-            stats.peak_usage = stats.peak_usage.max(stats.total_allocated - stats.total_freed);
+            stats.peak_usage = stats
+                .peak_usage
+                .max(stats.total_allocated - stats.total_freed);
         }
-        
+
         Ok(object_ref)
     }
-    
+
     pub async fn deallocate_object(&self, object_ref: ObjectRef) -> Result<()> {
         let object_info = {
             let mut objects = self.objects.write();
             objects.remove(&object_ref)
         };
-        
+
         if let Some(info) = object_info {
             // Update region
             {
@@ -163,7 +165,7 @@ impl MemoryManager {
                     region.objects.remove(&object_ref);
                 }
             }
-            
+
             // Update stats
             {
                 let mut stats = self.stats.write();
@@ -172,52 +174,48 @@ impl MemoryManager {
                 stats.deallocations += 1;
             }
         }
-        
+
         Ok(())
     }
-    
-    pub async fn add_reference(
-        &self,
-        from_object: ObjectRef,
-        to_object: ObjectRef,
-    ) -> Result<()> {
+
+    pub async fn add_reference(&self, from_object: ObjectRef, to_object: ObjectRef) -> Result<()> {
         let mut objects = self.objects.write();
-        
+
         // Add reference to from_object
         if let Some(from_info) = objects.get_mut(&from_object) {
             if !from_info.references.contains(&to_object) {
                 from_info.references.push(to_object);
             }
         }
-        
+
         // Increment reference count of to_object
         if let Some(to_info) = objects.get_mut(&to_object) {
             to_info.reference_count += 1;
         }
-        
+
         Ok(())
     }
-    
+
     pub async fn remove_reference(
         &self,
         from_object: ObjectRef,
         to_object: ObjectRef,
     ) -> Result<()> {
         let mut objects = self.objects.write();
-        
+
         // Remove reference from from_object
         if let Some(from_info) = objects.get_mut(&from_object) {
             from_info.references.retain(|&r| r != to_object);
         }
-        
+
         // Decrement reference count of to_object
         if let Some(to_info) = objects.get_mut(&to_object) {
             to_info.reference_count = to_info.reference_count.saturating_sub(1);
         }
-        
+
         Ok(())
     }
-    
+
     pub async fn get_object_references(&self, object_ref: &ObjectRef) -> Result<Vec<ObjectRef>> {
         let objects = self.objects.read();
         if let Some(info) = objects.get(object_ref) {
@@ -226,17 +224,17 @@ impl MemoryManager {
             Ok(Vec::new())
         }
     }
-    
+
     pub async fn get_object_size(&self, object_ref: &ObjectRef) -> usize {
         let objects = self.objects.read();
         objects.get(object_ref).map(|info| info.size).unwrap_or(0)
     }
-    
+
     pub async fn get_all_objects(&self) -> Vec<ObjectRef> {
         let objects = self.objects.read();
         objects.keys().cloned().collect()
     }
-    
+
     pub async fn get_objects_in_generation(&self, generation: usize) -> Vec<ObjectRef> {
         let objects = self.objects.read();
         objects
@@ -245,31 +243,31 @@ impl MemoryManager {
             .map(|info| info.object_ref)
             .collect()
     }
-    
+
     pub async fn get_roots(&self) -> Vec<ObjectRef> {
         let roots = self.roots.read();
         roots.iter().cloned().collect()
     }
-    
+
     pub fn add_root(&self, object_ref: ObjectRef) {
         self.roots.write().insert(object_ref);
     }
-    
+
     pub fn remove_root(&self, object_ref: &ObjectRef) {
         self.roots.write().remove(object_ref);
     }
-    
+
     pub async fn get_memory_usage(&self) -> MemoryUsage {
         let stats = self.stats.read();
         let regions = self.regions.read();
-        
+
         let total_available: usize = regions.values().map(|r| r.size - r.allocated).sum();
         let fragmentation_ratio = if stats.total_allocated > 0 {
             (stats.total_allocated - stats.total_freed) as f64 / stats.total_allocated as f64
         } else {
             0.0
         };
-        
+
         MemoryUsage {
             total_allocated: stats.total_allocated - stats.total_freed,
             total_available,
@@ -277,11 +275,11 @@ impl MemoryManager {
             fragmentation_ratio,
         }
     }
-    
+
     pub fn get_stats(&self) -> MemoryStats {
         self.stats.read().clone()
     }
-    
+
     async fn find_or_create_region(
         &self,
         required_size: usize,
@@ -291,17 +289,18 @@ impl MemoryManager {
         {
             let regions = self.regions.read();
             for region in regions.values() {
-                if region.generation == generation && 
-                   (region.size - region.allocated) >= required_size {
+                if region.generation == generation
+                    && (region.size - region.allocated) >= required_size
+                {
                     return Ok(region.id);
                 }
             }
         }
-        
+
         // Create a new region
         self.create_region(generation).await
     }
-    
+
     async fn create_region(&self, generation: usize) -> Result<RegionId> {
         let region_id = Uuid::new_v4();
         let region = Region {
@@ -311,33 +310,34 @@ impl MemoryManager {
             generation,
             objects: HashSet::new(),
         };
-        
+
         self.regions.write().insert(region_id, region);
-        
+
         // Update stats
         self.stats.write().active_regions += 1;
-        
+
         Ok(region_id)
     }
-    
+
     pub async fn defragment(&self) -> Result<()> {
         // Simplified defragmentation - in reality this would be much more complex
         // This would involve moving objects to consolidate free space
-        
+
         let mut regions_to_consolidate = Vec::new();
-        
+
         {
             let regions = self.regions.read();
             for region in regions.values() {
-                if region.allocated < region.size / 4 { // Less than 25% utilized
+                if region.allocated < region.size / 4 {
+                    // Less than 25% utilized
                     regions_to_consolidate.push(region.id);
                 }
             }
         }
-        
+
         // In a real implementation, we would move objects from under-utilized
         // regions to more utilized ones and free the empty regions
-        
+
         Ok(())
     }
 }

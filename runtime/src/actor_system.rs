@@ -41,26 +41,30 @@ pub struct ActorRef {
 pub trait Actor: Send + Sync + 'static {
     type Message: Send + 'static;
     type State: Send + Sync;
-    
+
     fn receive(
         &mut self,
         message: Self::Message,
         state: &mut Self::State,
         context: &ActorContext,
     ) -> BoxFuture<'static, ActorResult>;
-    
+
     fn pre_start(&mut self, _context: &ActorContext) -> BoxFuture<'static, Result<()>> {
         Box::pin(async move { Ok(()) })
     }
-    
+
     fn post_stop(&mut self, _context: &ActorContext) -> BoxFuture<'static, Result<()>> {
         Box::pin(async move { Ok(()) })
     }
-    
-    fn pre_restart(&mut self, _context: &ActorContext, _error: &ActorError) -> BoxFuture<'static, Result<()>> {
+
+    fn pre_restart(
+        &mut self,
+        _context: &ActorContext,
+        _error: &ActorError,
+    ) -> BoxFuture<'static, Result<()>> {
         Box::pin(async move { Ok(()) })
     }
-    
+
     fn post_restart(&mut self, _context: &ActorContext) -> BoxFuture<'static, Result<()>> {
         Box::pin(async move { Ok(()) })
     }
@@ -132,7 +136,7 @@ impl ActorSystem {
     pub fn new() -> Self {
         let supervisor = Arc::new(Supervisor::new(SupervisionStrategy::Restart));
         let message_router = Arc::new(MessageRouter::new());
-        
+
         Self {
             actors: DashMap::new(),
             supervisor,
@@ -140,25 +144,29 @@ impl ActorSystem {
             stats: RwLock::new(ActorSystemStats::default()),
         }
     }
-    
+
     pub async fn initialize(&self) -> Result<()> {
         // Initialize the actor system
         println!("Actor system initialized");
         Ok(())
     }
-    
+
     pub async fn shutdown(&self) -> Result<()> {
         // Gracefully shutdown all actors
-        let actors: Vec<_> = self.actors.iter().map(|entry| entry.key().clone()).collect();
-        
+        let actors: Vec<_> = self
+            .actors
+            .iter()
+            .map(|entry| entry.key().clone())
+            .collect();
+
         for actor_id in actors {
             self.stop_actor(&actor_id).await?;
         }
-        
+
         println!("Actor system shut down");
         Ok(())
     }
-    
+
     pub async fn spawn_actor<A>(
         &self,
         name: String,
@@ -170,14 +178,14 @@ impl ActorSystem {
     {
         let actor_id = Uuid::new_v4();
         let (sender, mut receiver) = mpsc::unbounded_channel::<ActorMessage>();
-        
+
         let actor_ref = ActorRef {
-            id: actor_id,  
+            id: actor_id,
             name: name.clone(),
             sender: sender.clone(),
             system: Arc::new(self.clone()), // This is problematic - we need a different approach
         };
-        
+
         let context = ActorContext {
             actor_id,
             actor_name: name.clone(),
@@ -185,21 +193,21 @@ impl ActorSystem {
             children: Vec::new(),
             system: Arc::new(self.clone()), // Same issue here
         };
-        
+
         // Start actor lifecycle
         actor.pre_start(&context).await?;
-        
+
         // Store actor reference
         self.actors.insert(actor_id, actor_ref.clone());
-        
+
         // Spawn actor task
         let system_clone = Arc::new(self.clone()); // Another clone issue
         let mut state = initial_state;
-        
+
         tokio::spawn(async move {
             while let Some(message) = receiver.recv().await {
                 let start_time = std::time::Instant::now();
-                
+
                 // Process message
                 let result = {
                     // Convert Any back to the actor's message type
@@ -208,13 +216,13 @@ impl ActorSystem {
                         actor.receive(*typed_message, &mut state, &context).await
                     } else {
                         ActorResult::Error(ActorError::MessageProcessingFailed(
-                            "Invalid message type".to_string()
+                            "Invalid message type".to_string(),
                         ))
                     }
                 };
-                
+
                 let processing_time = start_time.elapsed();
-                
+
                 // Handle result
                 match result {
                     ActorResult::Ok(response) => {
@@ -226,7 +234,7 @@ impl ActorSystem {
                         system_clone.handle_actor_error(actor_id, error).await;
                         if let Some(reply_channel) = message.reply_to {
                             let _ = reply_channel.send(ActorResult::Error(
-                                ActorError::MessageProcessingFailed("Actor error".to_string())
+                                ActorError::MessageProcessingFailed("Actor error".to_string()),
                             ));
                         }
                     }
@@ -235,30 +243,37 @@ impl ActorSystem {
                         break;
                     }
                     ActorResult::Restart => {
-                        let _ = actor.pre_restart(&context, &ActorError::SystemError("Restart requested".to_string())).await;
+                        let _ = actor
+                            .pre_restart(
+                                &context,
+                                &ActorError::SystemError("Restart requested".to_string()),
+                            )
+                            .await;
                         let _ = actor.post_restart(&context).await;
                     }
                 }
-                
+
                 // Update stats
                 {
                     let mut stats = system_clone.stats.write();
                     stats.total_messages += 1;
                     if stats.total_messages > 0 {
-                        let total_time = stats.average_message_processing_time * 
-                                       (stats.total_messages - 1) as u32 + processing_time;
-                        stats.average_message_processing_time = total_time / stats.total_messages as u32;
+                        let total_time = stats.average_message_processing_time
+                            * (stats.total_messages - 1) as u32
+                            + processing_time;
+                        stats.average_message_processing_time =
+                            total_time / stats.total_messages as u32;
                     }
                 }
             }
         });
-        
+
         // Update system stats
         self.stats.write().active_actors += 1;
-        
+
         Ok(actor_ref)
     }
-    
+
     pub async fn stop_actor(&self, actor_id: &ActorId) -> Result<()> {
         if let Some((_, actor_ref)) = self.actors.remove(actor_id) {
             // Send stop message
@@ -268,25 +283,25 @@ impl ActorSystem {
                 payload: Box::new(()), // Stop signal
                 reply_to: None,
             };
-            
+
             let _ = actor_ref.sender.send(stop_message);
             self.stats.write().active_actors -= 1;
         }
-        
+
         Ok(())
     }
-    
+
     pub fn get_actor(&self, actor_id: &ActorId) -> Option<ActorRef> {
         self.actors.get(actor_id).map(|entry| entry.value().clone())
     }
-    
+
     pub fn find_actor_by_name(&self, name: &str) -> Option<ActorRef> {
         self.actors
             .iter()
             .find(|entry| entry.value().name == name)
             .map(|entry| entry.value().clone())
     }
-    
+
     pub async fn broadcast_message<T>(&self, group: &str, message: T) -> Result<()>
     where
         T: Send + Clone + 'static,
@@ -298,10 +313,10 @@ impl ActorSystem {
                 }
             }
         }
-        
+
         Ok(())
     }
-    
+
     async fn handle_actor_error(&self, actor_id: ActorId, error: ActorError) {
         match self.supervisor.handle_failure(actor_id, error).await {
             SupervisionDecision::Restart => {
@@ -320,7 +335,7 @@ impl ActorSystem {
             }
         }
     }
-    
+
     pub fn get_stats(&self) -> ActorSystemStats {
         self.stats.read().clone()
     }
@@ -350,32 +365,32 @@ impl ActorRef {
             payload: Box::new(message),
             reply_to: None,
         };
-        
+
         self.sender
             .send(actor_message)
             .map_err(|_| anyhow::anyhow!("Failed to send message to actor"))?;
-        
+
         Ok(())
     }
-    
+
     pub async fn ask<T, R>(&self, message: T) -> Result<ActorResult>
     where
         T: Send + 'static,
         R: Send + 'static,
     {
         let (reply_sender, reply_receiver) = oneshot::channel();
-        
+
         let actor_message = ActorMessage {
             id: Uuid::new_v4(),
             sender: Some(self.clone()),
             payload: Box::new(message),
             reply_to: Some(reply_sender),
         };
-        
+
         self.sender
             .send(actor_message)
             .map_err(|_| anyhow::anyhow!("Failed to send message to actor"))?;
-        
+
         reply_receiver
             .await
             .map_err(|_| anyhow::anyhow!("Failed to receive reply from actor"))
@@ -391,22 +406,22 @@ impl Supervisor {
             restart_counts: DashMap::new(),
         }
     }
-    
+
     async fn handle_failure(&self, actor_id: ActorId, _error: ActorError) -> SupervisionDecision {
         // Check restart limits
         let now = std::time::Instant::now();
         let mut restart_times = self.restart_counts.entry(actor_id).or_insert_with(Vec::new);
-        
+
         // Remove old restart times outside the window
         restart_times.retain(|&time| now.duration_since(time) <= self.restart_window);
-        
+
         if restart_times.len() >= self.max_restarts {
             return SupervisionDecision::Stop;
         }
-        
+
         // Record this failure
         restart_times.push(now);
-        
+
         // Apply supervision strategy
         match self.strategy {
             SupervisionStrategy::Restart => SupervisionDecision::Restart,
@@ -432,15 +447,21 @@ impl MessageRouter {
             broadcast_groups: DashMap::new(),
         }
     }
-    
+
     pub fn add_route(&self, pattern: String, actor_id: ActorId) {
-        self.routes.entry(pattern).or_insert_with(Vec::new).push(actor_id);
+        self.routes
+            .entry(pattern)
+            .or_insert_with(Vec::new)
+            .push(actor_id);
     }
-    
+
     pub fn add_to_broadcast_group(&self, group: String, actor_id: ActorId) {
-        self.broadcast_groups.entry(group).or_insert_with(Vec::new).push(actor_id);
+        self.broadcast_groups
+            .entry(group)
+            .or_insert_with(Vec::new)
+            .push(actor_id);
     }
-    
+
     pub fn remove_from_broadcast_group(&self, group: &str, actor_id: &ActorId) {
         if let Some(mut group_actors) = self.broadcast_groups.get_mut(group) {
             group_actors.retain(|id| id != actor_id);

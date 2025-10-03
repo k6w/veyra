@@ -1,20 +1,20 @@
 use anyhow::Result;
 use std::sync::Arc;
 
-pub mod garbage_collector;
+pub mod actor_system;
 pub mod async_runtime;
+pub mod garbage_collector;
+pub mod jit_compiler;
 pub mod memory_manager;
 pub mod thread_pool;
-pub mod actor_system;
-pub mod jit_compiler;
 
 // Re-export important types
-pub use garbage_collector::*;
+pub use actor_system::*;
 pub use async_runtime::*;
+pub use garbage_collector::*;
+pub use jit_compiler::*;
 pub use memory_manager::*;
 pub use thread_pool::*;
-pub use actor_system::*;
-pub use jit_compiler::*;
 
 /// Main runtime system for Veyra
 pub struct VeyraRuntime {
@@ -34,7 +34,7 @@ impl VeyraRuntime {
         let thread_pool = Arc::new(ThreadPool::new(num_cpus::get()));
         let actor_system = Arc::new(ActorSystem::new());
         let jit_compiler = Arc::new(JitCompiler::new());
-        
+
         Self {
             memory_manager,
             garbage_collector,
@@ -44,7 +44,7 @@ impl VeyraRuntime {
             jit_compiler,
         }
     }
-    
+
     pub async fn initialize(&self) -> Result<()> {
         // Initialize all subsystems
         self.memory_manager.initialize().await?;
@@ -53,10 +53,10 @@ impl VeyraRuntime {
         self.thread_pool.start().await?;
         self.actor_system.initialize().await?;
         self.jit_compiler.initialize().await?;
-        
+
         Ok(())
     }
-    
+
     pub async fn shutdown(&self) -> Result<()> {
         // Shutdown all subsystems in reverse order
         self.jit_compiler.shutdown().await?;
@@ -66,7 +66,7 @@ impl VeyraRuntime {
         self.async_runtime.shutdown().await?;
         self.garbage_collector.stop().await?;
         self.memory_manager.shutdown().await?;
-        
+
         Ok(())
     }
 }

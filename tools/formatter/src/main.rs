@@ -5,11 +5,7 @@ use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 // Import from the main compiler
-use veyra_compiler::{
-    ast::*,
-    lexer::Lexer,
-    parser::Parser as VeyraParser,
-};
+use veyra_compiler::{ast::*, lexer::Lexer, parser::Parser as VeyraParser};
 
 #[derive(Parser)]
 #[command(name = "veyra-fmt")]
