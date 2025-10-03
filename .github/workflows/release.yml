@@ -72,8 +72,9 @@ jobs:
     
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
-      with:
-        targets: ${{ matrix.target }}
+    
+    - name: Add build target
+      run: rustup target add ${{ matrix.target }}
     
     - name: Build Compiler
       run: |
