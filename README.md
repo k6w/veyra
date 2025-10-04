@@ -9,7 +9,7 @@
 [![CI](https://github.com/k6w/veyra/actions/workflows/ci.yml/badge.svg)](https://github.com/k6w/veyra/actions/workflows/ci.yml)
 [![Release](https://github.com/k6w/veyra/actions/workflows/release.yml/badge.svg)](https://github.com/k6w/veyra/actions/workflows/release.yml)
 [![Security](https://github.com/k6w/veyra/actions/workflows/security.yml/badge.svg)](https://github.com/k6w/veyra/actions/workflows/security.yml)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com/k6w/veyra/releases)
+[![Version](https://img.shields.io/badge/version-0.1.5-blue)](https://github.com/k6w/veyra/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange)](https://www.rust-lang.org/)
 
