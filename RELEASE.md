@@ -2,6 +2,8 @@
 
 This document describes how to create and publish releases for the Veyra programming language.
 
+> **Note:** For technical details about the GitHub Actions workflows, see [.github/WORKFLOWS.md](.github/WORKFLOWS.md)
+
 ## Automated Releases
 
 ### Creating a Release
