@@ -236,6 +236,6 @@ jobs:
           3. Add the `bin` directory to your PATH
           4. Optionally install the VS Code extension
           
-          See the [Quick Start Guide](https://github.com/k6w/veyra/blob/main/QUICK_START.md) for detailed installation instructions.
+          See the [Quick Start Guide](https://github.com/k6w/veyra/blob/master/QUICK_START.md) for detailed installation instructions.
         draft: false
         prerelease: false
