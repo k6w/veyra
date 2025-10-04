@@ -17,9 +17,10 @@ env:
 
 jobs:
   test-build:
-    name: Test Build
+    name: Test Build ${{ matrix.artifact_name }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
