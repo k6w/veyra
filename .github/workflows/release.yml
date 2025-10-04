@@ -239,4 +239,3 @@ jobs:
           See the [Quick Start Guide](https://github.com/k6w/veyra/blob/main/QUICK_START.md) for detailed installation instructions.
         draft: false
         prerelease: false
-        fail_on_unmatched_files: false
