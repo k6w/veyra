@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Value"],"fn":["interpret"],"struct":["Environment","Interpreter","Reference"]};

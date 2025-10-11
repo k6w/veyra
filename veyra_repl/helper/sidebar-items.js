@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["BracketValidator","CommandCompleter","NoColorHighlighter","ReplHelper","SyntaxHighlighter","SyntectHighlighter"],"trait":["HighlighterAdapter"]};

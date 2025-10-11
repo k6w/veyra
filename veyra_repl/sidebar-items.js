@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["extract_symbols_for_completion","main","needs_more_lines","show_startup_tip"],"mod":["ansi","commands","config","helper","state","ui"],"struct":["Cli"]};

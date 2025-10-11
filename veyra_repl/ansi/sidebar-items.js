@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["_basic_strip","colors_enabled","init","maybe_strip"],"static":["COLORS_ENABLED","INIT"]};

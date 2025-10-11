@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ColorScheme","PromptStyle"],"fn":["default_true"],"struct":["ReplConfig"]};

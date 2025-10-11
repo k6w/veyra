@@ -1,0 +1,2 @@
+createSrcSidebar('[["veyra_runtime",["",[],["actor_system.rs","async_runtime.rs","garbage_collector.rs","jit_compiler.rs","lib.rs","memory_manager.rs","thread_pool.rs"]]]]');
+//{"start":19,"fragment_lengths":[151]}

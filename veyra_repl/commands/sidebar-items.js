@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["change_theme","clear_screen","handle_command","handle_config_command","load_file","save_session","show_config","show_functions","show_help","show_history","show_info","show_tips","show_type","show_variables","toggle_multiline","toggle_timing","toggle_verbose"]};

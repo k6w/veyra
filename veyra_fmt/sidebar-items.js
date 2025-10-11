@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["collect_veyra_files","format_file","main"],"struct":["Cli","Formatter","FormatterConfig"]};

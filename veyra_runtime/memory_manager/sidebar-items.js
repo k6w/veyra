@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["MemoryConfig","MemoryManager","MemoryStats","MemoryUsage","ObjectInfo","Region"],"type":["ObjectRef","RegionId"]};
