@@ -98,6 +98,7 @@ jobs:
           cd ../tools
           cargo fmt -- --check
       - name: Auto-fix formatting and push
+        if: failure() 
         run: |
           cd $GITHUB_WORKSPACE
           cargo fmt --all
