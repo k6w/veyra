@@ -88,7 +88,22 @@ impl CommandCompleter {
         Pair{display:format!("\x1b[{}m{}\x1b[0m ({})",color,raw,label),replacement:repl}
     }
 }
-impl Completer for CommandCompleter { type Candidate=Pair; fn complete(&self,line:&str,pos:usize,_:&Context<'_>)->rustyline::Result<(usize,Vec<Self::Candidate>)>{ let m=self.find_matches(line,pos); let start=line[..pos].rfind(|c:char| !c.is_alphanumeric() && c!='_' && c!=':').map(|i|i+1).unwrap_or(0); Ok((start,m)) } }
+impl Completer for CommandCompleter {
+    type Candidate = Pair;
+    fn complete(
+        &self,
+        line: &str,
+        pos: usize,
+        _: &Context<'_>,
+    ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
+        let m = self.find_matches(line, pos);
+        let start = line[..pos]
+            .rfind(|c: char| !c.is_alphanumeric() && c != '_' && c != ':')
+            .map(|i| i + 1)
+            .unwrap_or(0);
+        Ok((start, m))
+    }
+}
 
 pub trait HighlighterAdapter { fn highlight<'l>(&self,line:&'l str,pos:usize)->Cow<'l,str>; fn highlight_char(&self,_:&str,_:usize,_:bool)->bool { true } }
 pub struct NoColorHighlighter; impl HighlighterAdapter for NoColorHighlighter { fn highlight<'l>(&self,line:&'l str,_:usize)->Cow<'l,str>{ Cow::Borrowed(line) } }
