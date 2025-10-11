@@ -109,7 +109,53 @@ pub trait HighlighterAdapter { fn highlight<'l>(&self,line:&'l str,pos:usize)->C
 pub struct NoColorHighlighter; impl HighlighterAdapter for NoColorHighlighter { fn highlight<'l>(&self,line:&'l str,_:usize)->Cow<'l,str>{ Cow::Borrowed(line) } }
 pub struct SyntaxHighlighter { keywords: HashSet<String> }
 impl SyntaxHighlighter { pub fn new()->Self{ let mut k=HashSet::new(); for w in ["let","const","mut","fn","return","if","else","elif","match","case","default","for","while","loop","break","continue","struct","enum","trait","impl","type","use","pub","mod","async","await","defer","try","catch","throw","in","is","as","new","self","super","true","false","None","Some"] { k.insert(w.to_string()); } Self{keywords:k} } }
-impl HighlighterAdapter for SyntaxHighlighter { fn highlight<'l>(&self,line:&'l str,_:usize)->Cow<'l,str>{ use nu_ansi_term::Color; let mut out=String::new(); let mut cur=String::new(); let mut in_str=false; let mut q='\0'; let mut str_buf=String::new(); for ch in line.chars(){ if in_str { if ch==q { in_str=false; str_buf.push(ch); out.push_str(&Color::Green.paint(&str_buf).to_string()); str_buf.clear(); } else { str_buf.push(ch); } continue; } if ch=='"' || ch=='\'' { if !cur.is_empty(){ self.color_word(&mut out,&cur); cur.clear(); } in_str=true; q=ch; str_buf.push(ch); } else if ch.is_alphanumeric()|| ch=='_' { cur.push(ch);} else { if !cur.is_empty(){ self.color_word(&mut out,&cur); cur.clear(); } out.push(ch);} } if !cur.is_empty(){ self.color_word(&mut out,&cur);} if in_str { out.push_str(&Color::Green.paint(&str_buf).to_string()); } Cow::Owned(out) } }
+impl HighlighterAdapter for SyntaxHighlighter {
+    fn highlight<'l>(&self, line: &'l str, _: usize) -> Cow<'l, str> {
+        use nu_ansi_term::Color;
+        let mut out = String::new();
+        let mut cur = String::new();
+        let mut in_str = false;
+        let mut q = '\0';
+        let mut str_buf = String::new();
+        for ch in line.chars() {
+            if in_str {
+                if ch == q {
+                    in_str = false;
+                    str_buf.push(ch);
+                    out.push_str(&Color::Green.paint(&str_buf).to_string());
+                    str_buf.clear();
+                } else {
+                    str_buf.push(ch);
+                }
+                continue;
+            }
+            if ch == '"' || ch == '\'' {
+                if !cur.is_empty() {
+                    self.color_word(&mut out, &cur);
+                    cur.clear();
+                }
+                in_str = true;
+                q = ch;
+                str_buf.push(ch);
+            } else if ch.is_alphanumeric() || ch == '_' {
+                cur.push(ch);
+            } else {
+                if !cur.is_empty() {
+                    self.color_word(&mut out, &cur);
+                    cur.clear();
+                }
+                out.push(ch);
+            }
+        }
+        if !cur.is_empty() {
+            self.color_word(&mut out, &cur);
+        }
+        if in_str {
+            out.push_str(&Color::Green.paint(&str_buf).to_string());
+        }
+        Cow::Owned(out)
+    }
+}
 impl SyntaxHighlighter { fn color_word(&self,out:&mut String,word:&str){ use nu_ansi_term::Color; if self.keywords.contains(word){ out.push_str(&Color::Cyan.bold().paint(word).to_string()); } else if word=="true"||word=="false" { out.push_str(&Color::Yellow.paint(word).to_string()); } else if word.chars().all(|c|c.is_numeric()) { out.push_str(&Color::Magenta.paint(word).to_string()); } else { out.push_str(word); } } }
 pub struct SyntectHighlighter { ps: syntect::parsing::SyntaxSet, ts: syntect::highlighting::ThemeSet, theme: syntect::highlighting::Theme }
 impl SyntectHighlighter { pub fn new()->Self{ let ps=syntect::parsing::SyntaxSet::load_defaults_newlines(); let ts=syntect::highlighting::ThemeSet::load_defaults(); let theme=ts.themes.get("base16-ocean.dark").cloned().or_else(|| ts.themes.values().next().cloned()).expect("theme"); Self{ps,ts,theme} } }
