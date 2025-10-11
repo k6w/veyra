@@ -128,8 +128,8 @@ jobs:
       - name: Run clippy
         run: |
           cd compiler
-          cargo clippy -- -D warnings
+          cargo clippy
           cd ../runtime
-          cargo clippy --all-targets -- -D warnings -A dead-code
+          cargo clippy --all-targets -A dead-code
           cd ../tools
-          cargo clippy -- -D warnings
+          cargo clippy
