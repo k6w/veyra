@@ -46,9 +46,8 @@ jobs:
         echo '<meta http-equiv="refresh" content="0; url=veyra_compiler/index.html">' > gh-pages/index.html
 
     - name: Deploy to GitHub Pages
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       uses: peaceiris/actions-gh-pages@v3
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.GH_PAT }}
         publish_dir: ./gh-pages
         cname: docs.veyra-lang.org
