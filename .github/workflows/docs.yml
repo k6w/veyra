@@ -8,7 +8,7 @@ on:
       - 'tools/*/src/**'
       - 'runtime/src/**'
       - '.github/workflows/docs.yml'
- 
+
 jobs:
   docs:
     name: Build Documentation
