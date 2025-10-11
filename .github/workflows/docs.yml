@@ -38,9 +38,13 @@ jobs:
     - name: Prepare docs for deployment
       run: |
         mkdir -p gh-pages
+        mkdir -p target/doc
+        cp -r compiler/target/doc/* target/doc/ 2>/dev/null || true
+        cp -r tools/target/doc/* target/doc/ 2>/dev/null || true
+        cp -r runtime/target/doc/* target/doc/ 2>/dev/null || true
         cp -r target/doc/* gh-pages/
         echo '<meta http-equiv="refresh" content="0; url=veyra_compiler/index.html">' > gh-pages/index.html
-    
+
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       uses: peaceiris/actions-gh-pages@v3
