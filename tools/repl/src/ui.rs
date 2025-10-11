@@ -25,7 +25,7 @@ impl Theme {
             muted: Color::DarkGray,
         }
     }
-    
+
     pub fn monokai() -> Self {
         Self {
             primary: Color::Rgb(102, 217, 239),
@@ -38,7 +38,7 @@ impl Theme {
             muted: Color::Rgb(117, 113, 94),
         }
     }
-    
+
     pub fn dracula() -> Self {
         Self {
             primary: Color::Rgb(139, 233, 253),
@@ -100,10 +100,11 @@ impl UI {
     pub fn new(theme: Theme) -> Self {
         Self { theme }
     }
-    
+
     /// Print the welcome banner
     pub fn print_banner(&self) {
-        let banner = format!(r#"
+        let banner = format!(
+            r#"
 ╔═══════════════════════════════════════════════════════════════════════╗
 ║                                                                       ║
 ║     ██╗   ██╗███████╗██╗   ██╗██████╗  █████╗                        ║
@@ -117,52 +118,61 @@ impl UI {
 ║            The Modern Programming Language                           ║
 ║                                                                       ║
 ╚═══════════════════════════════════════════════════════════════════════╝
-"#);
-        
+"#
+        );
+
         println!("{}", self.theme.primary.paint(banner));
-        println!("{}", Style::new().dimmed().paint("Type ':help' for help, ':exit' to quit"));
+        println!(
+            "{}",
+            Style::new()
+                .dimmed()
+                .paint("Type ':help' for help, ':exit' to quit")
+        );
         println!();
     }
-    
+
     /// Print a success message
     pub fn success(&self, message: &str) {
-        println!("{} {}", 
+        println!(
+            "{} {}",
             self.theme.success.paint("✓"),
             self.theme.success.paint(message)
         );
     }
-    
+
     /// Print an info message
     pub fn info(&self, message: &str) {
-        println!("{} {}", 
-            self.theme.info.paint("ℹ"),
-            message
-        );
+        println!("{} {}", self.theme.info.paint("ℹ"), message);
     }
-    
+
     /// Print a warning message
     pub fn warning(&self, message: &str) {
-        println!("{} {}", 
+        println!(
+            "{} {}",
             self.theme.warning.paint("⚠"),
             self.theme.warning.paint(message)
         );
     }
-    
+
     /// Print an error message
     pub fn error(&self, message: &str) {
-        eprintln!("{} {}", 
+        eprintln!(
+            "{} {}",
             self.theme.error.paint("✗"),
             self.theme.error.paint(message)
         );
     }
-    
+
     /// Print a section header
     pub fn section(&self, title: &str) {
         println!();
-        println!("{}", self.theme.primary.bold().paint(format!("▸ {}", title)));
+        println!(
+            "{}",
+            self.theme.primary.bold().paint(format!("▸ {}", title))
+        );
         println!("{}", self.theme.muted.paint("─".repeat(70)));
     }
-    
+
     /// Format the prompt
     pub fn get_prompt(&self, context: &str) -> String {
         // Use only ASCII to avoid variable-width glyph cursor misplacement on some Windows consoles
@@ -170,80 +180,81 @@ impl UI {
         // We show a trailing space; user input begins after that space.
         format!("{}> ", ctx)
     }
-    
+
     /// Format continuation prompt for multiline
     pub fn get_continuation_prompt(&self) -> String {
         // Simple dots with space, no special characters that might cause width issues
         let dots = self.theme.muted.paint("..");
         format!("{}  ", dots)
     }
-    
+
     /// Print execution result
     pub fn print_result(&self, value: &str, timing: Option<f64>) {
         let arrow = self.theme.highlight.paint("⇒");
         print!("{} {}", arrow, value);
-        
+
         if let Some(time) = timing {
             print!(" {}", self.theme.muted.paint(format!("({:.3}ms)", time)));
         }
         println!();
     }
-    
+
     /// Print a separator line
     #[allow(dead_code)]
     pub fn separator(&self) {
         println!("{}", self.theme.muted.paint("═".repeat(70)));
     }
-    
+
     /// Print a tip
     pub fn tip(&self, tip: &str) {
-        println!("{} {}", 
+        println!(
+            "{} {}",
             self.theme.info.paint("💡 Tip:"),
             Style::new().italic().paint(tip)
         );
     }
-    
+
     /// Format syntax error with context
     #[allow(dead_code)]
     pub fn print_syntax_error(&self, error: &str, line: usize, column: usize) {
         self.error(&format!("Syntax Error at line {}, column {}", line, column));
         println!("  {}", self.theme.muted.paint(error));
     }
-    
+
     /// Format runtime error
     pub fn print_runtime_error(&self, error: &str) {
         self.error(&format!("Runtime Error: {}", error));
     }
-    
+
     /// Print fancy error with context (miette-style)
     pub fn print_fancy_error(&self, source: &str, error_msg: &str) {
         use miette::Diagnostic;
         use std::fmt;
-        
+
         // Create a simple diagnostic
         #[derive(Debug)]
         struct ReplError {
             message: String,
         }
-        
+
         impl fmt::Display for ReplError {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 write!(f, "{}", self.message)
             }
         }
-        
+
         impl std::error::Error for ReplError {}
-        
+
         impl Diagnostic for ReplError {
             fn code<'a>(&'a self) -> Option<Box<dyn fmt::Display + 'a>> {
                 Some(Box::new("veyra::runtime_error"))
             }
         }
-        
+
         let err = ReplError {
             message: error_msg.to_string(),
         };
-        
+
         // Create a fancy report with source context
         let report = miette::Report::new(err).with_source_code(source.to_string());
         eprintln!("{:?}", report);
@@ -263,16 +274,16 @@ impl Table {
             rows: Vec::new(),
         }
     }
-    
+
     pub fn add_row(&mut self, row: Vec<String>) {
         self.rows.push(row);
     }
-    
+
     pub fn print(&self, theme: &Theme) {
         if self.rows.is_empty() {
             return;
         }
-        
+
         // Calculate column widths
         let mut widths: Vec<usize> = self.headers.iter().map(|h| h.len()).collect();
         for row in &self.rows {
@@ -282,24 +293,25 @@ impl Table {
                 }
             }
         }
-        
+
         // Print headers
         print!("│ ");
         for (i, header) in self.headers.iter().enumerate() {
-            print!("{:width$} │ ", 
-                theme.primary.bold().paint(header), 
+            print!(
+                "{:width$} │ ",
+                theme.primary.bold().paint(header),
                 width = widths[i]
             );
         }
         println!();
-        
+
         // Print separator
         print!("├");
         for width in &widths {
             print!("─{}─┼", "─".repeat(*width));
         }
         println!();
-        
+
         // Print rows
         for row in &self.rows {
             print!("│ ");
@@ -319,19 +331,19 @@ where
     F: FnOnce() -> T,
 {
     use indicatif::{ProgressBar, ProgressStyle};
-    
+
     let pb = ProgressBar::new_spinner();
     pb.set_style(
         ProgressStyle::default_spinner()
             .template("{spinner:.cyan} {msg}")
             .unwrap()
-            .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ")
+            .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ "),
     );
     pb.set_message(message.to_string());
     pb.enable_steady_tick(std::time::Duration::from_millis(100));
-    
+
     let result = f();
-    
+
     pb.finish_and_clear();
     result
 }

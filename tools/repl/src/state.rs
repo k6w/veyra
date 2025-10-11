@@ -31,40 +31,40 @@ impl ReplState {
             last_execution_time: None,
         }
     }
-    
+
     /// Execute Veyra code
     pub fn execute(&mut self, input: &str) -> Result<Option<Value>> {
         if input.trim().is_empty() {
             return Ok(None);
         }
-        
+
         let start = Instant::now();
-        
+
         // Tokenize
         let mut lexer = Lexer::new(input);
         let tokens = lexer.tokenize()?;
-        
+
         // Parse
         let mut parser = VeyraParser::new(tokens);
         let ast = parser.parse()?;
-        
+
         // Execute
         let result = self.interpreter.interpret(&ast)?;
-        
+
         let duration = start.elapsed();
         self.last_execution_time = Some(duration.as_secs_f64() * 1000.0);
-        
+
         // Add to history
         self.history.push(input.to_string());
-        
+
         Ok(Some(result))
     }
-    
+
     /// Get execution timing
     pub fn last_timing(&self) -> Option<f64> {
         self.last_execution_time
     }
-    
+
     /// Add input to multiline buffer
     pub fn add_to_multiline(&mut self, line: &str) {
         if !self.multiline_buffer.is_empty() {
@@ -72,32 +72,32 @@ impl ReplState {
         }
         self.multiline_buffer.push_str(line);
     }
-    
+
     /// Get and clear multiline buffer
     pub fn take_multiline(&mut self) -> String {
         std::mem::take(&mut self.multiline_buffer)
     }
-    
+
     /// Check if in multiline mode
     pub fn is_multiline(&self) -> bool {
         !self.multiline_buffer.is_empty()
     }
-    
+
     /// Get history
     pub fn history(&self) -> &[String] {
         &self.history
     }
-    
+
     /// Get config
     pub fn config(&self) -> &ReplConfig {
         &self.config
     }
-    
+
     /// Get config mutably
     pub fn config_mut(&mut self) -> &mut ReplConfig {
         &mut self.config
     }
-    
+
     /// Clear state
     pub fn reset(&mut self) {
         self.interpreter = Interpreter::new();
@@ -105,24 +105,24 @@ impl ReplState {
         self.functions.clear();
         self.multiline_buffer.clear();
     }
-    
+
     /// Get variable names
     pub fn variables(&self) -> &HashMap<String, String> {
         &self.variables
     }
-    
+
     /// Get function names
     pub fn functions(&self) -> &[String] {
         &self.functions
     }
-    
+
     /// Load and execute a file
     pub fn load_file(&mut self, path: &std::path::Path) -> Result<()> {
         let content = std::fs::read_to_string(path)?;
         self.execute(&content)?;
         Ok(())
     }
-    
+
     /// Save history to file
     pub fn save_history(&self, path: &std::path::Path) -> Result<()> {
         let content = self.history.join("\n");
@@ -140,7 +140,7 @@ fn format_value_with_depth(value: &Value, depth: usize, max_depth: usize) -> Str
     if depth >= max_depth {
         return "...".to_string();
     }
-    
+
     match value {
         Value::Integer(n) => n.to_string(),
         Value::Float(f) => {
@@ -165,7 +165,7 @@ fn format_value_with_depth(value: &Value, depth: usize, max_depth: usize) -> Str
                     .take(10)
                     .map(|v| format_value_with_depth(v, depth + 1, max_depth))
                     .collect();
-                
+
                 if arr.len() > 10 {
                     format!("[{}, ... {} more]", items.join(", "), arr.len() - 10)
                 } else {
@@ -191,7 +191,7 @@ fn format_value_with_depth(value: &Value, depth: usize, max_depth: usize) -> Str
                     })
                     .collect();
                 pairs.sort();
-                
+
                 if map.len() > 10 {
                     format!("{{{}, ... {} more}}", pairs.join(", "), map.len() - 10)
                 } else {
@@ -209,7 +209,7 @@ fn format_value_with_depth(value: &Value, depth: usize, max_depth: usize) -> Str
                     .map(|s| format!("\"{}\"", s.escape_default()))
                     .collect();
                 elements.sort();
-                
+
                 if set.len() > 10 {
                     format!("{{{}, ... {} more}}", elements.join(", "), set.len() - 10)
                 } else {
@@ -227,7 +227,7 @@ fn format_value_with_depth(value: &Value, depth: usize, max_depth: usize) -> Str
                     .iter()
                     .map(|v| format_value_with_depth(v, depth + 1, max_depth))
                     .collect();
-                
+
                 if tuple.len() == 1 {
                     format!("({},)", items[0])
                 } else {
@@ -235,16 +235,14 @@ fn format_value_with_depth(value: &Value, depth: usize, max_depth: usize) -> Str
                 }
             }
         }
-        Value::Reference(r) => {
-            match r.value.try_borrow() {
-                Ok(val) => format!(
-                    "&{}{}", 
-                    if r.mutable { "mut " } else { "" },
-                    format_value_with_depth(&val, depth + 1, max_depth)
-                ),
-                Err(_) => "&<borrowed>".to_string(),
-            }
-        }
+        Value::Reference(r) => match r.value.try_borrow() {
+            Ok(val) => format!(
+                "&{}{}",
+                if r.mutable { "mut " } else { "" },
+                format_value_with_depth(&val, depth + 1, max_depth)
+            ),
+            Err(_) => "&<borrowed>".to_string(),
+        },
     }
 }
 

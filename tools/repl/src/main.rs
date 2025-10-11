@@ -9,12 +9,12 @@ use anyhow::Result;
 use clap::Parser;
 use config::ReplConfig;
 use helper::ReplHelper;
-use rustyline::error::ReadlineError;
-use rustyline::{Editor, EditMode};
 use rustyline::config::Configurer;
+use rustyline::error::ReadlineError;
+use rustyline::{EditMode, Editor};
 use state::{format_value, ReplState};
-use ui::{Theme, UI};
 use std::path::PathBuf;
+use ui::{Theme, UI};
 
 #[derive(Parser)]
 #[command(
@@ -60,7 +60,6 @@ struct Cli {
     #[arg(short, long, value_name = "CODE")]
     execute: Option<String>,
 }
-
 
 fn main() -> Result<()> {
     // Parse CLI
@@ -140,7 +139,10 @@ fn main() -> Result<()> {
     // Load startup script if specified
     if let Some(ref startup_path) = config.startup_script {
         if startup_path.exists() {
-            ui.info(&format!("Loading startup script: {}", startup_path.display()));
+            ui.info(&format!(
+                "Loading startup script: {}",
+                startup_path.display()
+            ));
             if let Err(e) = state.load_file(startup_path) {
                 ui.error(&format!("Failed to load startup script: {}", e));
             } else {
@@ -152,7 +154,7 @@ fn main() -> Result<()> {
 
     // Create rustyline editor with helper
     let mut rl = Editor::<ReplHelper, rustyline::history::FileHistory>::new()?;
-    
+
     // Set edit mode
     if config.vi_mode {
         rl.set_edit_mode(EditMode::Vi);
@@ -163,7 +165,10 @@ fn main() -> Result<()> {
     // Set helper for completion and highlighting (advanced if syntect present)
     if config.auto_completion || (config.syntax_highlighting && !cli.no_highlight) {
         let enable_highlight = config.syntax_highlighting && !cli.no_highlight;
-        rl.set_helper(Some(ReplHelper::new(enable_highlight, config.auto_insert_function_parens)));
+        rl.set_helper(Some(ReplHelper::new(
+            enable_highlight,
+            config.auto_insert_function_parens,
+        )));
     }
 
     // Load history
@@ -195,7 +200,7 @@ fn main() -> Result<()> {
                 // Handle REPL commands
                 if input.starts_with(':') && !state.is_multiline() {
                     rl.add_history_entry(&line)?;
-                    
+
                     match commands::handle_command(input, &mut state, &mut ui) {
                         Ok(true) => continue,
                         Ok(false) => break,
@@ -231,14 +236,20 @@ fn main() -> Result<()> {
                             extract_symbols_for_completion(&complete_input, helper);
                         }
 
-                        let timing = if state.config().show_timing { state.last_timing() } else { None };
+                        let timing = if state.config().show_timing {
+                            state.last_timing()
+                        } else {
+                            None
+                        };
                         let value_str = format_value(&value);
                         let tname = state::type_name(&value);
                         ui.print_result(&format!("[{}] {}", tname, value_str), timing);
                     }
                     Ok(None) => {
                         // No output for statements like variable declarations
-                        if let Some(helper) = rl.helper_mut() { extract_symbols_for_completion(&complete_input, helper); }
+                        if let Some(helper) = rl.helper_mut() {
+                            extract_symbols_for_completion(&complete_input, helper);
+                        }
                     }
                     Err(e) => {
                         if state.config().fancy_errors {
@@ -356,12 +367,22 @@ fn extract_symbols_for_completion(src: &str, helper: &mut helper::ReplHelper) {
     for line in src.lines() {
         let trimmed = line.trim_start();
         if let Some(rest) = trimmed.strip_prefix("let ") {
-            let ident: String = rest.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
-            if !ident.is_empty() { helper.add_variable(ident); }
+            let ident: String = rest
+                .chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_')
+                .collect();
+            if !ident.is_empty() {
+                helper.add_variable(ident);
+            }
         }
         if let Some(rest) = trimmed.strip_prefix("fn ") {
-            let ident: String = rest.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
-            if !ident.is_empty() { helper.add_function(ident); }
+            let ident: String = rest
+                .chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_')
+                .collect();
+            if !ident.is_empty() {
+                helper.add_function(ident);
+            }
         }
     }
 }
