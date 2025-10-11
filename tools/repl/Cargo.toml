@@ -11,7 +11,7 @@ name = "veyra-repl"
 path = "src/main.rs"
 
 [dependencies]
-rustyline = "14.0"
+rustyline = "17.0"
 clap = { version = "4.0", features = ["derive"] }
 anyhow = "1.0"
 colored = "2.0"
