@@ -98,8 +98,8 @@ jobs:
           cd ../tools
           cargo fmt -- --check
       - name: Auto-fix formatting and push
-        if: failure() # Only runs if previous step failed
         run: |
+          cd $GITHUB_WORKSPACE
           cargo fmt --all
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
