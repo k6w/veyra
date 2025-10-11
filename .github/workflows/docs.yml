@@ -50,4 +50,3 @@ jobs:
       with:
         github_token: ${{ secrets.GH_PAT }}
         publish_dir: ./gh-pages
-        cname: docs.veyra-lang.org
