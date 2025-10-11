@@ -34,7 +34,7 @@ jobs:
       run: |
         cd runtime
         cargo doc --no-deps
-    
+     
     - name: Prepare docs for deployment
       run: |
         mkdir -p gh-pages
