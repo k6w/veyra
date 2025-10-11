@@ -162,5 +162,46 @@ impl SyntectHighlighter { pub fn new()->Self{ let ps=syntect::parsing::SyntaxSet
 impl HighlighterAdapter for SyntectHighlighter { fn highlight<'l>(&self,line:&'l str,_:usize)->Cow<'l,str>{ use syntect::easy::HighlightLines; use syntect::util::as_24_bit_terminal_escaped; if line.trim().is_empty(){ return Cow::Borrowed(line);} let syntax=self.ps.find_syntax_by_extension("rs").unwrap_or(self.ps.find_syntax_plain_text()); let mut h=HighlightLines::new(syntax,&self.theme); let ranges=h.highlight_line(line,&self.ps).unwrap_or_default(); Cow::Owned(as_24_bit_terminal_escaped(&ranges[..],false)) } }
 
 pub struct BracketValidator;
-impl BracketValidator { pub fn new()->Self{Self} fn count(&self,line:&str)->(i32,i32,i32){ let(mut p,mut b,mut c,mut in_s,mut esc)=(0,0,0,false,false); let mut quote='\0'; for ch in line.chars(){ if esc { esc=false; continue;} if ch=='\\' { esc=true; continue;} if ch=='"'||ch=='\'' { if in_s && ch==quote { in_s=false;} else if !in_s { in_s=true; quote=ch;} continue;} if in_s { continue;} match ch { '('=>p+=1,')'=>p-=1,'['=>b+=1,']'=>b-=1,'{'=>c+=1,'}'=>c-=1,_=>{} } } (p,b,c) } }
+impl BracketValidator {
+    pub fn new() -> Self {
+        Self
+    }
+
+    fn count(&self, line: &str) -> (i32, i32, i32) {
+        let (mut p, mut b, mut c, mut in_s, mut esc) = (0, 0, 0, false, false);
+        let mut quote = '\0';
+        for ch in line.chars() {
+            if esc {
+                esc = false;
+                continue;
+            }
+            if ch == '\\' {
+                esc = true;
+                continue;
+            }
+            if ch == '"' || ch == '\'' {
+                if in_s && ch == quote {
+                    in_s = false;
+                } else if !in_s {
+                    in_s = true;
+                    quote = ch;
+                }
+                continue;
+            }
+            if in_s {
+                continue;
+            }
+            match ch {
+                '(' => p += 1,
+                ')' => p -= 1,
+                '[' => b += 1,
+                ']' => b -= 1,
+                '{' => c += 1,
+                '}' => c -= 1,
+                _ => {}
+            }
+        }
+        (p, b, c)
+    }
+}
 impl Validator for BracketValidator { fn validate(&self, ctx:&mut ValidationContext)->rustyline::Result<ValidationResult>{ let input=ctx.input(); if input.trim().starts_with(':'){ return Ok(ValidationResult::Valid(None)); } let (p,b,c)=self.count(input); if p>0||b>0||c>0 { return Ok(ValidationResult::Incomplete);} if p<0||b<0||c<0 { return Ok(ValidationResult::Invalid(Some("Unmatched closing bracket".into())));} Ok(ValidationResult::Valid(None)) } }
