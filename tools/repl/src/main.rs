@@ -163,7 +163,7 @@ fn main() -> Result<()> {
     // Set helper for completion and highlighting (advanced if syntect present)
     if config.auto_completion || (config.syntax_highlighting && !cli.no_highlight) {
         let enable_highlight = config.syntax_highlighting && !cli.no_highlight;
-    rl.set_helper(Some(ReplHelper::new(enable_highlight, config.auto_insert_function_parens)));
+        rl.set_helper(Some(ReplHelper::new(enable_highlight, config.auto_insert_function_parens)));
     }
 
     // Load history
