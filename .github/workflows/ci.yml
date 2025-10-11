@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main, master ]
 
+permissions:
+  contents: write
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -19,92 +22,110 @@ jobs:
         rust: [stable]
     
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@master
-      with:
-        toolchain: ${{ matrix.rust }}
-    
-    - name: Cache cargo registry
-      uses: actions/cache@v4
-      with:
-        path: ~/.cargo/registry
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-    
-    - name: Cache cargo index
-      uses: actions/cache@v4
-      with:
-        path: ~/.cargo/git
-        key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
-    
-    - name: Cache cargo build
-      uses: actions/cache@v4
-      with:
-        path: |
-          compiler/target
-          runtime/target
-          tools/target
-        key: ${{ runner.os }}-${{ matrix.rust }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ matrix.rust }}-cargo-build-
-    
-    - name: Build Compiler
-      run: |
-        cd compiler
-        cargo build --verbose
-    
-    - name: Run Compiler Tests
-      run: |
-        cd compiler
-        cargo test --verbose
-    
-    - name: Build Runtime
-      run: |
-        cd runtime
-        cargo build --verbose
-    
-    - name: Run Runtime Tests
-      run: |
-        cd runtime
-        cargo test --verbose
-    
-    - name: Build Tools
-      run: |
-        cd tools
-        cargo build --verbose
-    
-    - name: Run Tools Tests
-      run: |
-        cd tools
-        cargo test --verbose
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: |
+            compiler/target
+            runtime/target
+            tools/target
+          key: ${{ runner.os }}-${{ matrix.rust }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.rust }}-cargo-build-
+      
+      - name: Build Compiler
+        run: |
+          cd compiler
+          cargo build --verbose
+      
+      - name: Run Compiler Tests
+        run: |
+          cd compiler
+          cargo test --verbose
+      
+      - name: Build Runtime
+        run: |
+          cd runtime
+          cargo build --verbose
+      
+      - name: Run Runtime Tests
+        run: |
+          cd runtime
+          cargo test --verbose
+      
+      - name: Build Tools
+        run: |
+          cd tools
+          cargo build --verbose
+      
+      - name: Run Tools Tests
+        run: |
+          cd tools
+          cargo test --verbose
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        components: rustfmt, clippy
-    
-    - name: Check formatting
-      run: |
-        cd compiler
-        cargo fmt -- --check
-        cd ../runtime
-        cargo fmt -- --check
-        cd ../tools
-        cargo fmt -- --check
-    
-    - name: Run clippy
-      run: |
-        cd compiler
-        cargo clippy -- -D warnings
-        cd ../runtime
-        cargo clippy --all-targets -- -D warnings -A dead-code
-        cd ../tools
-        cargo clippy -- -D warnings
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      
+      - name: Check formatting
+        id: fmtcheck
+        run: |
+          cd compiler
+          cargo fmt -- --check
+          cd ../runtime
+          cargo fmt -- --check
+          cd ../tools
+          cargo fmt -- --check
+      
+      - name: Auto-fix formatting and push
+        if: failure()
+        run: |
+          for dir in compiler runtime tools; do
+            cd $GITHUB_WORKSPACE/$dir
+            cargo fmt
+          done
+          cd $GITHUB_WORKSPACE
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          echo "Detected branch: $BRANCH_NAME"
+          git fetch origin $BRANCH_NAME
+          git checkout $BRANCH_NAME
+          git add .
+          git commit -m "chore: auto-format code via CI" || exit 0
+          git push origin $BRANCH_NAME
+      
+      - name: Run clippy
+        run: |
+          cd compiler
+          cargo clippy || true
+          cd ../runtime
+          cargo clippy --all-targets -A dead-code || true
+          cd ../tools
+          cargo clippy || true

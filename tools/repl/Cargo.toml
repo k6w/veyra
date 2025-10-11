@@ -1,6 +1,6 @@
 [package]
 name = "veyra-repl"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Veyra Team"]
 description = "Interactive REPL for the Veyra programming language"
@@ -10,12 +10,40 @@ license = "MIT OR Apache-2.0"
 name = "veyra-repl"
 path = "src/main.rs"
 
+
 [dependencies]
-rustyline = "17.0"
-clap = { version = "4.0", features = ["derive"] }
+# Core dependencies
+clap = { version = "4.5", features = ["derive", "cargo", "wrap_help"] }
 anyhow = "1.0"
-colored = "2.0"
+thiserror = "1.0"
+
+# Line editing
+rustyline = { version = "14.0", features = ["with-file-history"] }
+rustyline-derive = { version = "0.10" }
+
+# CLI styling & UX
+console = "0.15"
+indicatif = { version = "0.17", features = ["improved_unicode"] }
+owo-colors = { version = "4.0", features = ["supports-colors", "alloc"] }
+nu-ansi-term = "0.50"
+crossterm = "0.27"
+supports-color = "3.0"
+
+# Advanced highlighting & diagnostics (optional heavy deps)
+syntect = { version = "5.3", default-features = true }
+miette = { version = "7.6", features = ["fancy"] }
+
+# Utilities & config
 dirs = "5.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+chrono = "0.4"
+once_cell = "1.19"
+strip-ansi-escapes = "0.2"
+
+# Windows ANSI enabling
+windows-sys = { version = "0.52", features = ["Win32_System_Console", "Win32_Foundation"] }
 
 [dependencies.veyra-compiler]
 path = "../../compiler"
