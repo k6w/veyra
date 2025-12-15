@@ -122,7 +122,7 @@ jobs:
         Compress-Archive -Path * -DestinationPath ..\${{ matrix.artifact_name }}.zip
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: ${{ matrix.artifact_name }}
         path: ${{ matrix.artifact_name }}.${{ matrix.archive_ext }}
@@ -163,7 +163,7 @@ jobs:
         vsce package --out veyra-lang-${{ steps.get_version.outputs.version }}.vsix
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: vscode-extension
         path: tools/vscode_extension/veyra-lang-${{ steps.get_version.outputs.version }}.vsix
