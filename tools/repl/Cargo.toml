@@ -19,7 +19,7 @@ thiserror = "1.0"
 
 # Line editing
 rustyline = { version = "14.0", features = ["with-file-history"] }
-rustyline-derive = { version = "0.10" }
+rustyline-derive = { version = "0.11" }
 
 # CLI styling & UX
 console = "0.15"
