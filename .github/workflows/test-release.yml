@@ -37,7 +37,7 @@ jobs:
             archive_ext: tar.gz
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
@@ -116,7 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Setup Node.js
       uses: actions/setup-node@v5
