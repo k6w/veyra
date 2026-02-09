@@ -23,7 +23,7 @@ rustyline-derive = { version = "0.11" }
 
 # CLI styling & UX
 console = "0.15"
-indicatif = { version = "0.17", features = ["improved_unicode"] }
+indicatif = { version = "0.18", features = ["improved_unicode"] }
 owo-colors = { version = "4.0", features = ["supports-colors", "alloc"] }
 nu-ansi-term = "0.50"
 crossterm = "0.29"
