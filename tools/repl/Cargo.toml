@@ -43,7 +43,7 @@ once_cell = "1.19"
 strip-ansi-escapes = "0.2"
 
 # Windows ANSI enabling
-windows-sys = { version = "0.52", features = ["Win32_System_Console", "Win32_Foundation"] }
+windows-sys = { version = "0.61", features = ["Win32_System_Console", "Win32_Foundation"] }
 
 [dependencies.veyra-compiler]
 path = "../../compiler"
